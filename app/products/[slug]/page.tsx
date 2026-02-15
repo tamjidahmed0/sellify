@@ -16,9 +16,14 @@ import {
 } from 'lucide-react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
-import ProductCard from '@/components/products/ProductCard';
 import useSingleProduct from '@/hooks/useSingleProduct';
-import { Category, Product } from '@/lib/data/products';
+import { Product } from '@/lib/data/products';
+import useAddToCart from '@/hooks/useAddToCart';
+
+
+
+
+
 
 export default function ProductDetailPage() {
   const params = useParams();
@@ -27,6 +32,8 @@ export default function ProductDetailPage() {
   const [selectedImage, setSelectedImage] = useState(0);
 
   const { data, isLoading } = useSingleProduct(slug as string);
+  const { mutate: addToCart, isPending } = useAddToCart();
+
 
   const product: Product = data;
 
@@ -259,15 +266,24 @@ export default function ProductDetailPage() {
                     </div>
 
                     <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+
                       <Button
                         type="primary"
                         size="large"
                         icon={<ShoppingCart className="h-4 w-4 sm:h-5 sm:w-5" />}
                         className="flex-1 h-11 sm:h-12 bg-blue-600 hover:bg-blue-700 border-none font-semibold text-sm sm:text-base"
                         disabled={!product?.inStock}
+                        loading={isPending}
+                        onClick={() =>
+                          addToCart({
+                            productId: product.id,
+                            quantity: quantity,
+                          })
+                        }
                       >
                         Add to Cart
                       </Button>
+
                       <Button
                         size="large"
                         icon={<Heart className="h-4 w-4 sm:h-5 sm:w-5" />}

@@ -5,7 +5,7 @@ import { Button } from 'antd';
 import { ArrowRight } from 'lucide-react';
 // import { products } from '@/lib/data/products';
 import ProductCard from '@/components/products/ProductCard';
-import useProducts from '@/hooks/products';
+import useProducts from '@/hooks/useProducts';
 import { Product } from '@/lib/data/products';
 
 export default function FeaturedProducts() {

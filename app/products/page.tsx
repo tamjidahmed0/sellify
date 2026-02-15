@@ -7,30 +7,33 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import ProductCard from '@/components/products/ProductCard';
 import { categories, Category } from '@/lib/data/products';
-import useProducts from '@/hooks/products';
+import useProducts from '@/hooks/useProducts';
 import useCategories from '@/hooks/useCategories';
 
 import { Skeleton } from 'antd';
 import FilterContent from '@/components/ui/Filter';
 import FilterSkeleton from '@/components/ui/FilterSkeleton';
+import { useFilterStore } from '@/store/useFilterStore';
 
 
 
 const { Option } = Select;
 
 export default function ProductsPage() {
-    const [priceRange, setPriceRange] = useState<[number, number]>([0, 500]);
-    const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+    // const [priceRange, setPriceRange] = useState<[number, number]>([0, 500]);
+
     const [sortBy, setSortBy] = useState('featured');
     const [showFilters, setShowFilters] = useState(false);
+    const selectedCategories = useFilterStore((s) => s.selectedCategories);
+    const priceRange = useFilterStore((s) => s.priceRange);
 
-    const { data, isLoading } = useProducts();
+    const { data, isLoading } = useProducts(0, 20, selectedCategories, priceRange);
+    const { data: categories, isLoading: categoryLoading } = useCategories();
 
 
 
 
 
-    console.log(data, 'ddd')
 
 
 
@@ -66,7 +69,7 @@ export default function ProductsPage() {
                     </div>
 
 
-                    <div className='lg:hidden w-full'>
+                    {/* <div className='lg:hidden w-full'>
                         <Button
                             icon={<SlidersHorizontal className="h-4 w-4" />}
                             onClick={() => setShowFilters(!showFilters)}
@@ -75,28 +78,28 @@ export default function ProductsPage() {
                         >
                             Filters
                         </Button>
-                    </div>
+                    </div> */}
 
                 </div>
 
                 <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
 
                     {/* Desktop Filters Sidebar */}
-                    {isLoading ? (
+                    {categoryLoading ? (
                         <FilterSkeleton />
-                    ) :
-
-                        (
-                            <aside className="hidden lg:block lg:w-64">
-                                <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 sticky top-20 lg:top-24">
-                                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Filters</h3>
-                                    <FilterContent />
-                                </div>
-                            </aside>
-
-                        )
-
+                    ):
+                    
+                    (
+                    <aside className="hidden lg:block lg:w-64">
+                        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 sticky top-20 lg:top-24">
+                            <h3 className="text-lg font-semibold text-gray-900 mb-4">Filters</h3>
+                            <FilterContent data={categories} />
+                        </div>
+                    </aside>
+                    )
                     }
+
+
 
 
                     {/* Mobile Filters Drawer */}
@@ -107,12 +110,12 @@ export default function ProductsPage() {
                         open={showFilters}
                         className="lg:hidden"
                     >
-                        <FilterContent />
+                        <FilterContent data={categories} />
                     </Drawer>
 
                     {/* Products Grid */}
                     <div className="flex-1 w-full">
-                        <div className="bg-white p-3 sm:p-4 rounded-lg shadow-sm border border-gray-200 mb-4 sm:mb-6">
+                        {/* <div className="bg-white p-3 sm:p-4 rounded-lg shadow-sm border border-gray-200 mb-4 sm:mb-6">
                             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
                                 <span className="text-sm sm:text-base text-gray-700 font-medium">Sort by:</span>
                                 <Select
@@ -128,7 +131,7 @@ export default function ProductsPage() {
                                     <Option value="rating">Highest Rated</Option>
                                 </Select>
                             </div>
-                        </div>
+                        </div> */}
 
                         {isLoading ? (
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
