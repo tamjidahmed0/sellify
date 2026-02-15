@@ -14,9 +14,7 @@ import CartSkeleton from './CartSkeleton';
 export default function CartPage() {
     const { data, isLoading } = useCart();
     const { mutate: updateCartQty, loadingItems } = useUpdateCart();
-    const { mutate: removeCartItem, isPending } = useRemoveCart();
-
-
+    const { mutate: removeCartItem, loadingItems: cart_remove_button_loading } = useRemoveCart();
 
 
 
@@ -118,7 +116,7 @@ export default function CartPage() {
                                                             danger
                                                             icon={<Trash2 className="h-4 w-4" />}
                                                             onClick={() => removeCartItem(item.id)}
-                                                            loading={isPending}
+                                                            loading={cart_remove_button_loading[item.id]}
                                                         >
                                                             Remove
                                                         </Button>

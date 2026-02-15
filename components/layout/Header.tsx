@@ -7,17 +7,20 @@ import {
     ShoppingCart,
     Search,
     Menu,
-    X,
     Heart,
     User,
     Store,
 } from 'lucide-react';
+import useCart from '@/hooks/useCart';
 
 const { Search: AntSearch } = Input;
 
 export default function Header() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-    const [cartCount] = useState(3);
+    const { data } = useCart();
+    const cartCount = data?.items.length
+
+
 
     const navigation = [
         { name: 'Home', href: '/' },
@@ -74,7 +77,7 @@ export default function Header() {
                                 href="/cart"
                                 className="flex items-center space-x-2 text-gray-700 hover:text-blue-600 transition-colors"
                             >
-                                <Badge count={cartCount} showZero>
+                                <Badge count={cartCount} >
                                     <ShoppingCart className="h-6 w-6" />
                                 </Badge>
                             </Link>
