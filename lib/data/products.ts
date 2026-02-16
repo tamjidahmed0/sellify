@@ -2,12 +2,19 @@
 export interface Category {
   id: string;
   name: string;
+  image:string;
   createdAt: string;
 }
 interface Images {
   id: string;
   url: string;
   productId: string;
+}
+
+export interface CategoryResponse {
+  minPrice: string;
+  maxPrice: string;
+  categories: Category[];
 }
 
 export interface Product {

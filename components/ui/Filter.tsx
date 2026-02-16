@@ -153,6 +153,7 @@ const FilterContent = ({data} : any) => {
                 <div className="space-y-2">
                     {data?.categories?.map((category: any) => (
                         <Checkbox
+                        className='capitalize'
                             key={category.id}
                             checked={selectedCategories.includes(category.name)}
                             onChange={(e) => {

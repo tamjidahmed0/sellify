@@ -2,10 +2,15 @@
 
 import Link from 'next/link';
 import { Card } from 'antd';
-import { categories } from '@/lib/data/products';
 import { ArrowRight } from 'lucide-react';
+import useCategories from '@/hooks/useCategories';
+
 
 export default function Categories() {
+
+  const { data } = useCategories()
+
+
   return (
     <section className="py-16 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -19,19 +24,19 @@ export default function Categories() {
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          {categories.map((category) => (
-            <Link key={category.id} href={`/products?category=${category.name}`}>
+          {data?.categories.map((item) => (
+            <Link key={item.id} href={`/products?category=${item.name}`}>
               <Card
                 hoverable
                 className="text-center border-2 border-transparent hover:border-blue-500 transition-all duration-300 h-full"
               >
                 <div
-                  className={`${category.color} w-20 h-20 mx-auto rounded-full flex items-center justify-center text-4xl mb-4`}
+                  className={`w-20 h-20 mx-auto rounded-full flex items-center justify-center text-4xl mb-4`}
                 >
-                  {category.icon}
+                  <img src={item?.image} alt={item?.name} />
                 </div>
-                <h3 className="font-semibold text-gray-900 mb-2">
-                  {category.name}
+                <h3 className="font-semibold text-gray-900 mb-2 capitalize">
+                  {item.name}
                 </h3>
                 <div className="flex items-center justify-center text-blue-600 text-sm font-medium">
                   <span>Explore</span>

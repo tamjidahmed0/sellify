@@ -5,12 +5,16 @@ import { Card, Button, Breadcrumb } from 'antd';
 import { Home, ArrowRight } from 'lucide-react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
-import { categories, products } from '@/lib/data/products';
+// import { categories, products } from '@/lib/data/products';
+import useCategories from '@/hooks/useCategories';
 
 export default function CategoriesPage() {
-  const getCategoryCount = (categoryName: string) => {
-    return products.filter((p) => p.category === categoryName).length;
-  };
+
+  const { data } = useCategories()
+
+  // const getCategoryCount = (categoryName: string) => {
+  //   return products.filter((p) => p.category === categoryName).length;
+  // };
 
   return (
     <div className="min-h-screen bg-linear-to-b from-gray-50 to-white">
@@ -41,22 +45,23 @@ export default function CategoriesPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-          {categories.map((category) => {
-            const count = getCategoryCount(category.name);
+          {data?.categories.map((category) => {
+            // const count = getCategoryCount(category.name);
             return (
               <Link key={category.id} href={`/products?category=${category.name}`}>
                 <Card
                   className="h-full cursor-pointer hover:shadow-xl transition-all duration-300 transform hover:scale-105"
                   hoverable
                 >
-                  <div className={`${category.color} rounded-lg p-16 text-center mb-4`}>
-                    <div className="text-6xl mb-4">{category.icon}</div>
+                  <div className={` rounded-lg p-16 text-center mb-4`}>
+                    {/* <div className="text-6xl mb-4">{category.icon}</div> */}
+                    <img src={category.image} alt={category.name}  />
                   </div>
-                  <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2 capitalize">
                     {category.name}
                   </h2>
                   <p className="text-gray-600 mb-4">
-                    {count} product{count !== 1 ? 's' : ''}
+                    {/* {count} product{count !== 1 ? 's' : ''} */}
                   </p>
                   <Button
                     type="primary"

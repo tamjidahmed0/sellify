@@ -27,6 +27,7 @@ import useAddToCart from '@/hooks/useAddToCart';
 
 export default function ProductDetailPage() {
   const params = useParams();
+
   const slug = params.slug;
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
@@ -205,7 +206,7 @@ export default function ProductDetailPage() {
                 <>
                   <div>
                     {product?.categories.map((item, index) => (
-                      <Tag color="blue" className="mb-3" key={index}>
+                      <Tag color="blue" className="mb-3 capitalize" key={index}>
                         {item.name}
                       </Tag>
                     ))}

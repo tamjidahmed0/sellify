@@ -9,10 +9,7 @@ import useProducts from '@/hooks/useProducts';
 import { Product } from '@/lib/data/products';
 
 export default function FeaturedProducts() {
-  const { data, isLoading } = useProducts();
-
-  // const featuredProducts = products?.filter((p) => p.featured);
-
+  const { data, isLoading } = useProducts(0, 4);
 
 
 

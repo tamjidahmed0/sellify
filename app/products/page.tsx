@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Select, Slider, Checkbox, Button, Breadcrumb, Drawer } from 'antd';
 import { Home, SlidersHorizontal } from 'lucide-react';
 import Header from '@/components/layout/Header';
@@ -14,6 +14,7 @@ import { Skeleton } from 'antd';
 import FilterContent from '@/components/ui/Filter';
 import FilterSkeleton from '@/components/ui/FilterSkeleton';
 import { useFilterStore } from '@/store/useFilterStore';
+import { useSearchParams } from 'next/navigation';
 
 
 
@@ -22,17 +23,38 @@ const { Option } = Select;
 export default function ProductsPage() {
     // const [priceRange, setPriceRange] = useState<[number, number]>([0, 500]);
 
+    const searchParams = useSearchParams()
+    const categoryFromQuery = searchParams.get('category');
+
     const [sortBy, setSortBy] = useState('featured');
+
     const [showFilters, setShowFilters] = useState(false);
     const selectedCategories = useFilterStore((s) => s.selectedCategories);
+    const setCategories = useFilterStore((s) => s.setCategories);
     const priceRange = useFilterStore((s) => s.priceRange);
 
-    const { data, isLoading } = useProducts(0, 20, selectedCategories, priceRange);
+
+
+    const effectiveCategories = categoryFromQuery
+        ? [categoryFromQuery]
+        : selectedCategories;
+
+    const { data, isLoading } = useProducts(0, 20, effectiveCategories, priceRange);
     const { data: categories, isLoading: categoryLoading } = useCategories();
 
 
 
+    // useEffect(() => {
+    //     const categoryFromQuery = searchParams.get('category');
 
+    //     if (categoryFromQuery) {
+    //         setCategories([categoryFromQuery]);
+    //     }
+
+    // }, [searchParams]);
+
+
+ 
 
 
 
@@ -65,6 +87,7 @@ export default function ProductsPage() {
                         </h1>
                         <p className="text-sm sm:text-base text-gray-600">
                             {/* Showing {filteredProducts.length} of {products.length} products */}
+                            
                         </p>
                     </div>
 
@@ -87,16 +110,16 @@ export default function ProductsPage() {
                     {/* Desktop Filters Sidebar */}
                     {categoryLoading ? (
                         <FilterSkeleton />
-                    ):
-                    
-                    (
-                    <aside className="hidden lg:block lg:w-64">
-                        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 sticky top-20 lg:top-24">
-                            <h3 className="text-lg font-semibold text-gray-900 mb-4">Filters</h3>
-                            <FilterContent data={categories} />
-                        </div>
-                    </aside>
-                    )
+                    ) :
+
+                        (
+                            <aside className="hidden lg:block lg:w-64">
+                                <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 sticky top-20 lg:top-24">
+                                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Filters</h3>
+                                    <FilterContent data={categories} />
+                                </div>
+                            </aside>
+                        )
                     }
 
 

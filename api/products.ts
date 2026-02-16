@@ -12,7 +12,7 @@ const products = async (
     params.append('take', String(take));
 
 
-    categories.forEach((c) => params.append('categories', c));
+    categories.forEach((c) => params.append('category', c));
 
     if (priceRange) {
         params.append('minPrice', String(priceRange[0]));
