@@ -87,7 +87,7 @@ export default function ProductDetailPage() {
                 ),
               },
               { title: <a href="/products">Products</a> },
-              { title: product?.name },
+              { title: product?.slug },
             ]}
             className="mb-4 sm:mb-6"
           />
