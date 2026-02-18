@@ -172,15 +172,19 @@ export default function CartPage() {
                                             </div>
                                         </div>
 
-                                        <Button
-                                            type="primary"
-                                            size="large"
-                                            block
-                                            icon={<ShoppingBag className="h-5 w-5" />}
-                                            className="h-12 bg-blue-600 hover:bg-blue-700 border-none font-semibold mb-4"
-                                        >
-                                            Proceed to Checkout
-                                        </Button>
+                                        <Link href="/checkout">
+                                            <Button
+
+                                                type="primary"
+                                                size="large"
+                                                block
+                                                icon={<ShoppingBag className="h-5 w-5" />}
+                                                className="h-12 bg-blue-600 hover:bg-blue-700 border-none font-semibold mb-4"
+                                            >
+                                                Proceed to Checkout
+                                            </Button>
+                                        </Link>
+
 
                                         <Link href="/products">
                                             <Button
