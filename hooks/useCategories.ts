@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query"
-import categories from "@/api/categories"
+import categories from "@/services/api/categories"
 import { CategoryResponse } from "@/lib/data/products"
 
 
