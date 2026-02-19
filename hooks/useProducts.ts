@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query"
-import products from "@/api/products"
+import products from "@/services/api/products"
 
 
 const useProducts = (skip?: number, take?: number, categories?: string[], priceRange?: [number, number]) => {

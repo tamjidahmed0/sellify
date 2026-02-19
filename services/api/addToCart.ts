@@ -1,4 +1,4 @@
-export interface AddToCartPayload {
+interface AddToCartPayload {
     productId: string;
     quantity: number;
 }
@@ -12,9 +12,12 @@ export default async function addToCart(payload: AddToCartPayload) {
         body: JSON.stringify(payload),
     });
 
+    const data = await res.json();
+
     if (!res.ok) {
-        throw new Error('Failed to add to cart');
+        const errorMessage = data?.message || 'Failed to add to cart';
+        throw new Error(errorMessage);
     }
 
-    return res.json(); 
+    return data;
 }

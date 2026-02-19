@@ -7,9 +7,12 @@ export async function updateQuantityApi(cartItemId: string, quantity: number) {
     body: JSON.stringify({ cartItemId, quantity }),
   });
 
+  const data = await res.json();
+
   if (!res.ok) {
-    throw new Error('Failed to update quantity');
+    const errorMessage = data?.message || 'Failed to update quantity';
+    throw new Error(errorMessage);
   }
 
-  return res.json();
+  return data;
 }

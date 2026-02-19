@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { updateQuantityApi } from '@/api/updateQuantity';
+import { updateQuantityApi } from '@/services/api/updateQuantity';
+import { message } from 'antd';
 
 
 export default function useUpdateCart() {
@@ -34,9 +35,9 @@ export default function useUpdateCart() {
             });
         },
 
-        onError: (_, { cartItemId }) => {
+        onError: (error: any) => {
             // show error
-            alert('Failed to update quantity');
+           message.error(error.message || 'Failed to update quantity');
         },
 
         onSettled: (_, __, { cartItemId }) => {

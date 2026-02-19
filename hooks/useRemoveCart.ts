@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import removeCartItem from '@/api/removeCartItem';
+import removeCartItem from '@/services/api/removeCartItem';
 import { message } from 'antd';
 import { useState } from 'react';
 
