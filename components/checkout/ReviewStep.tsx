@@ -1,6 +1,7 @@
 import { Card, Button, Checkbox } from 'antd';
 import { CreditCard, Edit2, ShoppingBag, Truck } from 'lucide-react';
 import { Cart } from '@/types/cart';
+import useCreateOrder from '@/hooks/useCreateOrder';
 
 interface ReviewStepProps {
   data?: Cart;
@@ -21,6 +22,27 @@ export default function ReviewStep({
   paymentMethod,
 }: ReviewStepProps) {
   if (!data) return null;
+
+
+  const { mutate, isPending } = useCreateOrder()
+
+
+
+  const handleOrder = () => {
+    mutate({
+      userId: '1',
+      items: data.items.map((item) => ({
+        productId: item.productId,
+        quantity: item.quantity,
+      }))
+    })
+
+
+
+
+  }
+
+
 
   return (
     <Card className="mb-6 rounded-xl shadow-sm">
@@ -129,14 +151,21 @@ export default function ReviewStep({
           Back
         </Button>
 
+
         <Button
+          onClick={handleOrder}
           type="primary"
           size="large"
-          disabled={!agreeTerms}
+          loading={isPending}
+          disabled={!agreeTerms || isPending}
           className="h-12 px-8 bg-green-600 hover:bg-green-700 border-none font-semibold w-full sm:w-auto"
         >
-          Place Order
+          {isPending ? "Placing Order..." : "Place Order"}
         </Button>
+
+
+
+
       </div>
     </Card>
   );
