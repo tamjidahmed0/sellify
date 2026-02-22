@@ -1,13 +1,18 @@
+import getCookie from "@/lib/getCookie";
+
 interface AddToCartPayload {
     productId: string;
     quantity: number;
 }
 
 export default async function addToCart(payload: AddToCartPayload) {
+    const token = getCookie("token");
+    if (!token) throw new Error("No token found");
     const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/cart/add`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(payload),
     });

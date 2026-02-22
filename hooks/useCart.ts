@@ -5,7 +5,7 @@ import { Cart } from "@/types/cart"
 const useCart = () => {
     return useQuery<Cart>({
         queryKey: ['cart'],
-        queryFn: () => cart(),
+        queryFn: () => cart()
 
     })
 }

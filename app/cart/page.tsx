@@ -2,20 +2,33 @@
 
 import Link from 'next/link';
 import { Button, InputNumber, Card, Breadcrumb, Empty } from 'antd';
-import { Trash2, ShoppingBag, Home, ArrowRight } from 'lucide-react';
+import { Trash2, ShoppingBag, Home, ArrowRight, LogIn } from 'lucide-react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import useCart from '@/hooks/useCart';
 import useUpdateCart from '@/hooks/useUpdateCart';
 import useRemoveCart from '@/hooks/useRemoveCart';
 import CartSkeleton from './CartSkeleton';
+import { useEffect, useState } from 'react';
+import deleteCookie from '@/lib/deleteCookie';
+import isCookieAvailable from '@/lib/isCookieAvailable';
+import AuthModal from '@/components/ui/AuthModal';
 
 
 export default function CartPage() {
-    const { data, isLoading } = useCart();
+    const [authModalOpen, setAuthModalOpen] = useState(false);
+    const { data, isLoading, error } = useCart();
     const { mutate: updateCartQty, loadingItems } = useUpdateCart();
     const { mutate: removeCartItem, loadingItems: cart_remove_button_loading } = useRemoveCart();
+    const tokenAvailable = isCookieAvailable('token');
 
+
+    useEffect(() => {
+        if (error) {
+            deleteCookie('token');
+        }
+
+    }, [error])
 
 
     // Order summary calculation
@@ -51,169 +64,190 @@ export default function CartPage() {
                     Shopping Cart
                 </h1>
 
-                {isLoading ? (
-                    <CartSkeleton />
-                ) :
-                    data?.items.length === 0 ? (
-                        <Card className="text-center py-16">
-                            <Empty
-                                image={Empty.PRESENTED_IMAGE_SIMPLE}
-                                description={<span className="text-gray-600">Your cart is empty</span>}
+                {/* if token not available then signin */}
+                {!tokenAvailable ? (
+                    <Card className="text-center py-16">
+                        <Empty
+                            image={Empty.PRESENTED_IMAGE_SIMPLE}
+                            description={
+                                <span className="text-gray-600">
+                                    Please sign in to view your cart
+                                </span>
+                            }
+                        >
+
+                            <Button
+                                onClick={() => { setAuthModalOpen(true) }}
+                                type="primary"
+                                size="large"
+                                icon={<LogIn className="h-4 w-4" />}
+                                className="mt-4"
                             >
-                                <Link href="/products">
-                                    <Button type="primary" size="large" className="mt-4">
-                                        Continue Shopping
-                                    </Button>
-                                </Link>
-                            </Empty>
-                        </Card>
-                    ) : (
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                            {/* Cart Items */}
-                            <div className="lg:col-span-2 space-y-4">
-                                {data?.items.map((item) => (
-                                    <Card key={item.id}>
-                                        <div className="flex flex-col sm:flex-row gap-4">
-                                            <Link href={`/products/${item.product.slug}`} className="shrink-0">
-                                                <img
-                                                    src={item.image}
-                                                    alt={item.productName}
-                                                    className="w-full sm:w-32 h-32 object-cover rounded-lg"
-                                                />
-                                            </Link>
+                                Sign In
+                            </Button>
 
-                                            <div className="flex-1 flex flex-col justify-between">
-                                                <div>
-                                                    <Link href={`/products/${item.product.slug}`}>
-                                                        <h3 className="text-lg font-semibold text-gray-900 hover:text-blue-600 transition-colors">
-                                                            {item.productName}
-                                                        </h3>
-                                                    </Link>
+                        </Empty>
+                    </Card>
+                ) : isLoading ? (
+                    <CartSkeleton />
+                ) : data?.items.length === 0 ? (
+                    <Card className="text-center py-16">
+                        <Empty
+                            image={Empty.PRESENTED_IMAGE_SIMPLE}
+                            description={<span className="text-gray-600">Your cart is empty</span>}
+                        >
+                            <Link href="/products">
+                                <Button type="primary" size="large" className="mt-4">
+                                    Continue Shopping
+                                </Button>
+                            </Link>
+                        </Empty>
+                    </Card>
+                ) : (
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        {/* Cart Items */}
+                        <div className="lg:col-span-2 space-y-4">
+                            {data?.items.map((item) => (
+                                <Card key={item.id}>
+                                    <div className="flex flex-col sm:flex-row gap-4">
+                                        <Link href={`/products/${item.product.slug}`} className="shrink-0">
+                                            <img
+                                                src={item.image}
+                                                alt={item.productName}
+                                                className="w-full sm:w-32 h-32 object-cover rounded-lg"
+                                            />
+                                        </Link>
+
+                                        <div className="flex-1 flex flex-col justify-between">
+                                            <div>
+                                                <Link href={`/products/${item.product.slug}`}>
+                                                    <h3 className="text-lg font-semibold text-gray-900 hover:text-blue-600 transition-colors">
+                                                        {item.productName}
+                                                    </h3>
+                                                </Link>
+                                            </div>
+
+                                            <div className="flex flex-wrap items-center justify-between gap-4 mt-4">
+                                                <div className="flex items-center space-x-4">
+                                                    <span className="text-gray-700 font-medium">Qty:</span>
+                                                    <InputNumber
+                                                        min={1}
+                                                        max={10}
+                                                        value={item.quantity}
+                                                        disabled={loadingItems[item.id]}
+                                                        onChange={(value) =>
+                                                            updateCartQty({
+                                                                cartItemId: item.id,
+                                                                quantity: value || 1,
+                                                            })
+                                                        }
+                                                    />
                                                 </div>
 
-                                                <div className="flex flex-wrap items-center justify-between gap-4 mt-4">
-                                                    <div className="flex items-center space-x-4">
-                                                        <span className="text-gray-700 font-medium">Qty:</span>
-                                                        <InputNumber
-                                                            min={1}
-                                                            max={10}
-                                                            value={item.quantity}
-                                                            disabled={loadingItems[item.id]}
-                                                            onChange={(value) =>
-                                                                updateCartQty({
-                                                                    cartItemId: item.id,
-                                                                    quantity: value || 1,
-                                                                })
-                                                            }
-                                                        />
-                                                    </div>
-
-                                                    <div className="flex items-center space-x-4">
-                                                        <span className="text-2xl font-bold text-gray-900">
-                                                            ${(Number(item.price) * item.quantity).toFixed(2)}
-                                                        </span>
-                                                        <Button
-                                                            danger
-                                                            icon={<Trash2 className="h-4 w-4" />}
-                                                            onClick={() => removeCartItem(item.id)}
-                                                            loading={cart_remove_button_loading[item.id]}
-                                                        >
-                                                            Remove
-                                                        </Button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </Card>
-                                ))}
-                            </div>
-
-                            {/* Sticky Order Summary */}
-                            <div className="lg:col-span-1">
-                                <div className="sticky top-20 lg:top-24">
-                                    <Card>
-                                        <h2 className="text-xl font-bold text-gray-900 mb-6">
-                                            Order Summary
-                                        </h2>
-
-                                        <div className="space-y-4 mb-6">
-                                            <div className="flex justify-between">
-                                                <span className="text-gray-600">Subtotal</span>
-                                                <span className="font-semibold text-gray-900">
-                                                    ${subtotal.toFixed(2)}
-                                                </span>
-                                            </div>
-
-                                            <div className="flex justify-between">
-                                                <span className="text-gray-600">Shipping</span>
-                                                <span className="font-semibold text-gray-900">
-                                                    {shipping === 0 ? (
-                                                        <span className="text-green-600">Free</span>
-                                                    ) : (
-                                                        `$${shipping.toFixed(2)}`
-                                                    )}
-                                                </span>
-                                            </div>
-
-                                            <div className="flex justify-between">
-                                                <span className="text-gray-600">Tax</span>
-                                                <span className="font-semibold text-gray-900">
-                                                    ${tax.toFixed(2)}
-                                                </span>
-                                            </div>
-
-                                            <div className="border-t border-gray-200 pt-4">
-                                                <div className="flex justify-between">
-                                                    <span className="text-lg font-bold text-gray-900">Total</span>
+                                                <div className="flex items-center space-x-4">
                                                     <span className="text-2xl font-bold text-gray-900">
-                                                        ${total.toFixed(2)}
+                                                        ${(Number(item.price) * item.quantity).toFixed(2)}
                                                     </span>
+                                                    <Button
+                                                        danger
+                                                        icon={<Trash2 className="h-4 w-4" />}
+                                                        onClick={() => removeCartItem(item.id)}
+                                                        loading={cart_remove_button_loading[item.id]}
+                                                    >
+                                                        Remove
+                                                    </Button>
                                                 </div>
                                             </div>
                                         </div>
+                                    </div>
+                                </Card>
+                            ))}
+                        </div>
 
-                                        <Link href="/checkout">
-                                            <Button
+                        {/* Sticky Order Summary */}
+                        <div className="lg:col-span-1">
+                            <div className="sticky top-20 lg:top-24">
+                                <Card>
+                                    <h2 className="text-xl font-bold text-gray-900 mb-6">
+                                        Order Summary
+                                    </h2>
 
-                                                type="primary"
-                                                size="large"
-                                                block
-                                                icon={<ShoppingBag className="h-5 w-5" />}
-                                                className="h-12 bg-blue-600 hover:bg-blue-700 border-none font-semibold mb-4"
-                                            >
-                                                Proceed to Checkout
-                                            </Button>
-                                        </Link>
+                                    <div className="space-y-4 mb-6">
+                                        <div className="flex justify-between">
+                                            <span className="text-gray-600">Subtotal</span>
+                                            <span className="font-semibold text-gray-900">
+                                                ${subtotal.toFixed(2)}
+                                            </span>
+                                        </div>
 
+                                        <div className="flex justify-between">
+                                            <span className="text-gray-600">Shipping</span>
+                                            <span className="font-semibold text-gray-900">
+                                                {shipping === 0 ? (
+                                                    <span className="text-green-600">Free</span>
+                                                ) : (
+                                                    `$${shipping.toFixed(2)}`
+                                                )}
+                                            </span>
+                                        </div>
 
-                                        <Link href="/products">
-                                            <Button
-                                                size="large"
-                                                block
-                                                icon={<ArrowRight className="h-5 w-5" />}
-                                                className="h-12"
-                                            >
-                                                Continue Shopping
-                                            </Button>
-                                        </Link>
+                                        <div className="flex justify-between">
+                                            <span className="text-gray-600">Tax</span>
+                                            <span className="font-semibold text-gray-900">
+                                                ${tax.toFixed(2)}
+                                            </span>
+                                        </div>
 
-                                        {shipping > 0 && (
-                                            <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-                                                <p className="text-sm text-blue-800">
-                                                    Add ${(50 - subtotal).toFixed(2)} more to get free shipping!
-                                                </p>
+                                        <div className="border-t border-gray-200 pt-4">
+                                            <div className="flex justify-between">
+                                                <span className="text-lg font-bold text-gray-900">Total</span>
+                                                <span className="text-2xl font-bold text-gray-900">
+                                                    ${total.toFixed(2)}
+                                                </span>
                                             </div>
-                                        )}
-                                    </Card>
-                                </div>
+                                        </div>
+                                    </div>
+
+                                    <Link href="/checkout">
+                                        <Button
+                                            type="primary"
+                                            size="large"
+                                            block
+                                            icon={<ShoppingBag className="h-5 w-5" />}
+                                            className="h-12 bg-blue-600 hover:bg-blue-700 border-none font-semibold mb-4"
+                                        >
+                                            Proceed to Checkout
+                                        </Button>
+                                    </Link>
+
+
+                                    <Link href="/products">
+                                        <Button
+                                            size="large"
+                                            block
+                                            icon={<ArrowRight className="h-5 w-5" />}
+                                            className="h-12"
+                                        >
+                                            Continue Shopping
+                                        </Button>
+                                    </Link>
+
+                                    {shipping > 0 && (
+                                        <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+                                            <p className="text-sm text-blue-800">
+                                                Add ${(50 - subtotal).toFixed(2)} more to get free shipping!
+                                            </p>
+                                        </div>
+                                    )}
+                                </Card>
                             </div>
                         </div>
-                    )
-
-                }
+                    </div>
+                )}
 
 
             </div>
+            <AuthModal open={authModalOpen} onClose={() => setAuthModalOpen(false)} />
 
             <Footer />
         </div>
