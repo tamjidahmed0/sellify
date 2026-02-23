@@ -30,7 +30,6 @@ export default function ReviewStep({
 
   const handleOrder = () => {
     mutate({
-      userId: '1',
       items: data.items.map((item) => ({
         productId: item.productId,
         quantity: item.quantity,

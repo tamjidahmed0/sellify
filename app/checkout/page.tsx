@@ -10,7 +10,10 @@ import {
 import {
     Home,
     ShoppingBag,
+    ShoppingCart,
 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Button } from 'antd';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import useCart from '@/hooks/useCart';
@@ -18,6 +21,7 @@ import OrderSummaryContent from '@/components/checkout/OrderSummary';
 import ReviewStep from '@/components/checkout/ReviewStep';
 import PaymentStep from '@/components/checkout/PaymentForm';
 import ShippingStep from '@/components/checkout/ShippingForm';
+import CheckoutSkeleton from '@/app/checkout/CheckoutSkeleton';
 
 type StepKey = 'shipping' | 'payment' | 'review';
 
@@ -27,13 +31,11 @@ export default function CheckoutPage() {
     const [paymentMethod, setPaymentMethod] = useState('card');
     const [agreeTerms, setAgreeTerms] = useState(false);
     const [showOrderSummary, setShowOrderSummary] = useState(false);
+    const router = useRouter();
 
     const { data, isLoading } = useCart();
 
-
-
-
-
+    const isEmpty = !isLoading && (!data?.items || data.items.length === 0);
 
     const subtotal = data?.items.reduce(
         (sum, item) => sum + Number(item.price) * item.quantity,
@@ -50,25 +52,25 @@ export default function CheckoutPage() {
     ];
 
     const handleNextStep = () => {
-        if (currentStep === 'shipping') {
-            setCurrentStep('payment');
-        } else if (currentStep === 'payment') {
-            setCurrentStep('review');
-        }
+        if (currentStep === 'shipping') setCurrentStep('payment');
+        else if (currentStep === 'payment') setCurrentStep('review');
     };
 
     const handlePrevStep = () => {
-        if (currentStep === 'payment') {
-            setCurrentStep('shipping');
-        } else if (currentStep === 'review') {
-            setCurrentStep('payment');
-        }
+        if (currentStep === 'payment') setCurrentStep('shipping');
+        else if (currentStep === 'review') setCurrentStep('payment');
     };
+
+
+
+
+
 
 
     return (
         <div className="min-h-screen bg-linear-to-b from-gray-50 to-white">
             <Header />
+
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8">
                 <Breadcrumb
@@ -94,113 +96,120 @@ export default function CheckoutPage() {
                         Complete your purchase securely
                     </p>
                 </div>
-
-                {/* Mobile: collapsible Order Summary toggle */}
-                <div className="lg:hidden mb-4">
-                    <button
-                        onClick={() => setShowOrderSummary((prev) => !prev)}
-                        className="w-full flex items-center justify-between bg-white border border-gray-200 rounded-xl px-4 py-3 shadow-sm"
-                    >
-                        <div className="flex items-center space-x-2 text-blue-600 font-semibold text-sm">
-                            <ShoppingBag className="h-4 w-4" />
-                            <span>
-                                {showOrderSummary ? 'Hide' : 'Show'} order summary (
-                                {data?.items.length} items)
-                            </span>
+                {isLoading ? (
+                    <CheckoutSkeleton />
+                ) : isEmpty ? (
+                    <Card className="rounded-xl shadow-sm">
+                        <div className="flex flex-col items-center justify-center py-16 text-center">
+                            <ShoppingCart className="h-16 w-16 text-gray-300 mb-4" />
+                            <h3 className="text-xl font-bold text-gray-700 mb-2">Your cart is empty</h3>
+                            <p className="text-sm text-gray-400 mb-8">
+                                Looks like you haven't added anything to your cart yet.
+                            </p>
+                            <Button
+                                type="primary"
+                                size="large"
+                                className="h-12 px-8 bg-blue-600 hover:bg-blue-700 border-none font-semibold"
+                                onClick={() => router.replace('/products')}
+                            >
+                                Go to Products
+                            </Button>
                         </div>
-                        <span className="text-lg font-bold text-blue-600">
-                            ${total.toFixed(2)}
-                        </span>
-                    </button>
+                    </Card>
+                ) : (
+                    <>
+                        {/* Mobile: collapsible Order Summary toggle */}
+                        <div className="lg:hidden mb-4">
+                            <button
+                                onClick={() => setShowOrderSummary((prev) => !prev)}
+                                className="w-full flex items-center justify-between bg-white border border-gray-200 rounded-xl px-4 py-3 shadow-sm"
+                            >
+                                <div className="flex items-center space-x-2 text-blue-600 font-semibold text-sm">
+                                    <ShoppingBag className="h-4 w-4" />
+                                    <span>
+                                        {showOrderSummary ? 'Hide' : 'Show'} order summary (
+                                        {data?.items.length} items)
+                                    </span>
+                                </div>
+                                <span className="text-lg font-bold text-blue-600">
+                                    ${total.toFixed(2)}
+                                </span>
+                            </button>
 
-                    {showOrderSummary && (
-                        <Card className="mt-2 rounded-xl border border-gray-200 shadow-sm">
-                            {data && (
-                                <OrderSummaryContent
-                                    data={data}
-                                    subtotal={subtotal}
-                                    tax={tax}
-                                    shipping={shipping}
-                                    total={total}
-                                />
+                            {showOrderSummary && (
+                                <Card className="mt-2 rounded-xl border border-gray-200 shadow-sm">
+                                    {data && (
+                                        <OrderSummaryContent
+                                            data={data}
+                                            subtotal={subtotal}
+                                            tax={tax}
+                                            shipping={shipping}
+                                            total={total}
+                                        />
+                                    )}
+                                </Card>
                             )}
+                        </div>
 
-                        </Card>
-                    )}
-                </div>
-
-                <div className='mb-6 md:mb-8'>
-                    <Steps
-                        current={steps.findIndex((s) => s.key === currentStep)}
-                        items={steps.map((s) => ({ title: s.title }))}
-                        size="small"
-                        responsive={false}
-                    />
-                </div>
-
-
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 items-start">
-                    {/* Main Content */}
-                    <div className="lg:col-span-2 w-full min-w-0">
-                        {/* Shipping Step */}
-                        {currentStep === 'shipping' && (
-                            <ShippingStep form={form} handleNextStep={handleNextStep} />
-                        )}
-
-                        {/* Payment Step */}
-                        {currentStep === 'payment' && (
-                            <PaymentStep
-                                paymentMethod={paymentMethod}
-                                setPaymentMethod={setPaymentMethod}
-                                handleNextStep={handleNextStep}
-                                handlePrevStep={handlePrevStep}
+                        <div className="mb-6 md:mb-8">
+                            <Steps
+                                current={steps.findIndex((s) => s.key === currentStep)}
+                                items={steps.map((s) => ({ title: s.title }))}
+                                size="small"
+                                responsive={false}
                             />
-                        )}
+                        </div>
 
-                        {/* Review Step */}
-                        {currentStep === 'review' && (
-                            <ReviewStep
-                                data={data}
-                                agreeTerms={agreeTerms}
-                                setAgreeTerms={setAgreeTerms}
-                                handlePrevStep={handlePrevStep}
-                                setCurrentStep={setCurrentStep}
-                                paymentMethod={paymentMethod}
-                            />
-
-                        )}
-                    </div>
-
-                    {/* Sidebar - Order Summary (Desktop only, sticky) */}
-                    <div className="hidden lg:block lg:col-span-1">
-                        <div className="sticky top-24">
-                            <Card className="rounded-xl shadow-sm">
-                                {/* <OrderSummaryContent /> */}
-
-                                {data && (
-                                    <OrderSummaryContent
-                                        data={data}
-                                        subtotal={subtotal}
-                                        tax={tax}
-                                        shipping={shipping}
-                                        total={total}
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 items-start">
+                            <div className="lg:col-span-2 w-full min-w-0">
+                                {currentStep === 'shipping' && (
+                                    <ShippingStep form={form} handleNextStep={handleNextStep} />
+                                )}
+                                {currentStep === 'payment' && (
+                                    <PaymentStep
+                                        paymentMethod={paymentMethod}
+                                        setPaymentMethod={setPaymentMethod}
+                                        handleNextStep={handleNextStep}
+                                        handlePrevStep={handlePrevStep}
                                     />
                                 )}
-                            </Card>
+                                {currentStep === 'review' && (
+                                    <ReviewStep
+                                        data={data}
+                                        agreeTerms={agreeTerms}
+                                        setAgreeTerms={setAgreeTerms}
+                                        handlePrevStep={handlePrevStep}
+                                        setCurrentStep={setCurrentStep}
+                                        paymentMethod={paymentMethod}
+                                    />
+                                )}
+                            </div>
+
+                            <div className="hidden lg:block lg:col-span-1">
+                                <div className="sticky top-24">
+                                    <Card className="rounded-xl shadow-sm">
+                                        {data && (
+                                            <OrderSummaryContent
+                                                data={data}
+                                                subtotal={subtotal}
+                                                tax={tax}
+                                                shipping={shipping}
+                                                total={total}
+                                            />
+                                        )}
+                                    </Card>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </div>
+                    </>
+                )}
+
             </div>
 
             <Footer />
         </div>
     );
 }
-
-
-
-
-
 
 
 
