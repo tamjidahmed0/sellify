@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import useCart from '@/hooks/useCart';
 import AuthModal from '../ui/AuthModal';
+import useProfile from '@/hooks/useProfile';
 
 const { Search: AntSearch } = Input;
 
@@ -20,7 +21,10 @@ export default function Header() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [authModalOpen, setAuthModalOpen] = useState(false);
     const { data } = useCart();
+    const { data: profile } = useProfile();
     const cartCount = data?.items.length
+
+
 
 
 
@@ -71,11 +75,24 @@ export default function Header() {
                                 <Heart className="h-6 w-6" />
                             </button>
 
-                            <button
-                                onClick={() => { setMobileMenuOpen(false); setAuthModalOpen(true); }}
-                                className="hidden cursor-pointer md:flex items-center space-x-2 text-gray-700 hover:text-blue-600 transition-colors">
-                                <User className="h-6 w-6" />
-                            </button>
+                            {profile ? (
+                                <img
+                                    src={profile?.picture}
+                                    alt="Profile"
+                                    className="w-7 h-7 rounded-full object-cover"
+                                />
+                            ) : (
+                                <button
+                                    onClick={() => {
+                                        setMobileMenuOpen(false);
+                                        setAuthModalOpen(true);
+                                    }}
+                                    className="hidden cursor-pointer md:flex items-center space-x-2 text-gray-700 hover:text-blue-600 transition-colors"
+                                >
+                                    <User className="h-6 w-6" />
+                                </button>
+                            )}
+
 
                             <Link
                                 href="/cart"

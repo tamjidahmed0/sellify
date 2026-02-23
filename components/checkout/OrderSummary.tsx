@@ -1,5 +1,6 @@
-import {  Cart } from '@/types/cart'
-
+import { Cart } from '@/types/cart'
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
 
 interface OrderSummaryProps {
@@ -14,6 +15,22 @@ interface OrderSummaryProps {
 
 const OrderSummary = ({ data, subtotal, shipping, tax, total }: OrderSummaryProps) => {
   console.log(data, 'ok ok')
+
+
+  // const router = useRouter();
+
+  // useEffect(()=>{
+
+
+  //   if (data.items.length === 0) {
+  //     router.push('/cart');
+  //   }
+
+
+  // },[])
+
+
+
 
   return (
     <>

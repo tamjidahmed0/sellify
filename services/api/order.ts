@@ -6,7 +6,7 @@ export interface CreateOrderItem {
 }
 
 export interface CreateOrderPayload {
-    userId: string;
+    // userId: string;
     items: CreateOrderItem[];
 }
 
