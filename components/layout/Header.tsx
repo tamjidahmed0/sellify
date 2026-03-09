@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Badge, Drawer, Input } from 'antd';
+import { Badge, Drawer, Input, Dropdown, MenuProps } from 'antd';
 import {
     ShoppingCart,
     Search,
@@ -10,10 +10,15 @@ import {
     Heart,
     User,
     Store,
+    LogOut,
+    ShoppingBag,
+    XCircle,
+    Star,
 } from 'lucide-react';
 import useCart from '@/hooks/useCart';
 import AuthModal from '../ui/AuthModal';
 import useProfile from '@/hooks/useProfile';
+import Image from 'next/image';
 
 const { Search: AntSearch } = Input;
 
@@ -22,18 +27,56 @@ export default function Header() {
     const [authModalOpen, setAuthModalOpen] = useState(false);
     const { data } = useCart();
     const { data: profile } = useProfile();
-    const cartCount = data?.items.length
+    const cartCount = data?.items.length;
 
+    const handleLogout = () => {
 
+        console.log('Logout clicked');
+    };
 
+    const profileMenuItems: MenuProps['items'] = [
+        {
+            key: 'my-orders',
+            label: (
+                <Link href="/orders" className="flex items-center gap-2 py-1">
+                    <ShoppingBag className="h-4 w-4 text-blue-600" />
+                    <span>My Orders</span>
+                </Link>
+            ),
+        },
 
+        {
+            key: 'reviews',
+            label: (
+                <Link href="/reviews" className="flex items-center gap-2 py-1">
+                    <Star className="h-4 w-4 text-yellow-500" />
+                    <span>My Reviews</span>
+                </Link>
+            ),
+        },
+        {
+            type: 'divider',
+        },
+        {
+            key: 'logout',
+            label: (
+                <button
+                    onClick={handleLogout}
+                    className="flex items-center gap-2 py-1 w-full text-red-500"
+                >
+                    <LogOut className="h-4 w-4" />
+                    <span>Log Out</span>
+                </button>
+            ),
+        },
+    ];
 
     const navigation = [
         { name: 'Home', href: '/' },
         { name: 'Products', href: '/products' },
         { name: 'Categories', href: '/categories' },
-
     ];
+
 
     return (
         <header className="sticky top-0 z-50 bg-white shadow-sm">
@@ -76,11 +119,20 @@ export default function Header() {
                             </button>
 
                             {profile ? (
-                                <img
-                                    src={profile?.picture}
-                                    alt="Profile"
-                                    className="w-7 h-7 rounded-full object-cover"
-                                />
+                                <Dropdown
+                                    menu={{ items: profileMenuItems }}
+                                    trigger={['click']}
+                                    placement="bottomRight"
+                                    arrow
+                                >
+                                    <Image
+                                        src={profile?.picture}
+                                        alt="Profile"
+                                        width={32}
+                                        height={32}
+                                        className="w-8 h-8 rounded-full object-cover cursor-pointer ring-2 ring-blue-100 hover:ring-blue-400 transition-all"
+                                    />
+                                </Dropdown>
                             ) : (
                                 <button
                                     onClick={() => {
@@ -93,12 +145,11 @@ export default function Header() {
                                 </button>
                             )}
 
-
                             <Link
                                 href="/cart"
                                 className="flex items-center space-x-2 text-gray-700 hover:text-blue-600 transition-colors"
                             >
-                                <Badge count={cartCount} >
+                                <Badge count={cartCount}>
                                     <ShoppingCart className="h-6 w-6" />
                                 </Badge>
                             </Link>

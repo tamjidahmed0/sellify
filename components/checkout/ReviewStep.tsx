@@ -1,10 +1,15 @@
-import { Card, Button, Checkbox } from 'antd';
+import { Card, Button, Checkbox, message } from 'antd';
 import { CreditCard, Edit2, ShoppingBag, Truck } from 'lucide-react';
 import { Cart } from '@/types/cart';
-import useCreateOrder from '@/hooks/useCreateOrder';
+import { useElements, useStripe } from '@stripe/react-stripe-js';
+import { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+
+
 
 interface ReviewStepProps {
   data?: Cart;
+  paymentIntentId: string | null;
   agreeTerms: boolean;
   setAgreeTerms: (v: boolean) => void;
   handlePrevStep: () => void;
@@ -21,25 +26,56 @@ export default function ReviewStep({
   setCurrentStep,
   paymentMethod,
 }: ReviewStepProps) {
+
+  const queryClient = useQueryClient();
+
+  const stripe = useStripe()
+  const elements = useElements()
+  const [loading, setLoading] = useState(false);
+
   if (!data) return null;
 
 
-  const { mutate, isPending } = useCreateOrder()
+
+  const handleOrder = async () => {
+    if (!stripe || !elements) return;
+    setLoading(true);
+
+
+    const { error, paymentIntent } = await stripe.confirmPayment({
+      elements,
+      redirect: 'if_required',
+    });
+
+    if (error) {
+      message.error(error.message);
+      setLoading(false);
+      return;
+    }
+
+
+    if (paymentIntent?.status === 'succeeded') {
+      console.log('this is success')
+
+      message.success('Payment successful!');
+
+      queryClient.setQueryData<Cart>(['cart'], {
+        id: '',
+        userId: '',
+        items: [],
+        total: 0,
+      });
+
+
+    }
+
+    setLoading(false);
+  };
 
 
 
-  const handleOrder = () => {
-    mutate({
-      items: data.items.map((item) => ({
-        productId: item.productId,
-        quantity: item.quantity,
-      }))
-    })
 
 
-
-
-  }
 
 
 
@@ -151,7 +187,7 @@ export default function ReviewStep({
         </Button>
 
 
-        <Button
+        {/* <Button
           onClick={handleOrder}
           type="primary"
           size="large"
@@ -160,6 +196,19 @@ export default function ReviewStep({
           className="h-12 px-8 bg-green-600 hover:bg-green-700 border-none font-semibold w-full sm:w-auto"
         >
           {isPending ? "Placing Order..." : "Place Order"}
+        </Button> */}
+
+
+
+        <Button
+          onClick={handleOrder}
+          type="primary"
+          size="large"
+          loading={loading}
+          disabled={!agreeTerms || loading}
+          className="h-12 px-8 bg-green-600 ..."
+        >
+          {(loading) ? "Processing..." : "Place Order"}
         </Button>
 
 

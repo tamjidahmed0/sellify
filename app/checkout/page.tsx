@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
     Card,
     Form,
@@ -19,11 +19,18 @@ import Footer from '@/components/layout/Footer';
 import useCart from '@/hooks/useCart';
 import OrderSummaryContent from '@/components/checkout/OrderSummary';
 import ReviewStep from '@/components/checkout/ReviewStep';
-import PaymentStep from '@/components/checkout/PaymentForm';
+import PaymentStep from '@/components/checkout/PaymentStep';
 import ShippingStep from '@/components/checkout/ShippingForm';
 import CheckoutSkeleton from '@/app/checkout/CheckoutSkeleton';
+import { Elements } from '@stripe/react-stripe-js';
+import { loadStripe } from '@stripe/stripe-js';
+import getCookie from '@/lib/getCookie';
 
 type StepKey = 'shipping' | 'payment' | 'review';
+
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PROMISE as string);
+
+
 
 export default function CheckoutPage() {
     const [form] = Form.useForm();
@@ -33,8 +40,11 @@ export default function CheckoutPage() {
     const [showOrderSummary, setShowOrderSummary] = useState(false);
     const router = useRouter();
 
-    const { data, isLoading } = useCart();
+    const [clientSecret, setClientSecret] = useState<string | null>(null);
+    const [paymentIntentId, setPaymentIntentId] = useState<string | null>(null);
+    const hasCreatedIntent = useRef(false);
 
+    const { data, isLoading } = useCart();
     const isEmpty = !isLoading && (!data?.items || data.items.length === 0);
 
     const subtotal = data?.items.reduce(
@@ -60,6 +70,35 @@ export default function CheckoutPage() {
         if (currentStep === 'payment') setCurrentStep('shipping');
         else if (currentStep === 'review') setCurrentStep('payment');
     };
+
+
+
+
+
+
+
+
+
+    useEffect(() => {
+        if (currentStep === 'payment' && !hasCreatedIntent.current) {
+            hasCreatedIntent.current = true;
+            createPaymentIntent();
+        }
+    }, [currentStep]);
+
+
+    const createPaymentIntent = async () => {
+        const token = getCookie('token')
+        const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/stripe/create-payment-intent`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        });
+        const { clientSecret, paymentIntentId } = await res.json();
+        setClientSecret(clientSecret);
+        setPaymentIntentId(paymentIntentId)
+    };
+
+
 
 
 
@@ -165,24 +204,38 @@ export default function CheckoutPage() {
                                 {currentStep === 'shipping' && (
                                     <ShippingStep form={form} handleNextStep={handleNextStep} />
                                 )}
-                                {currentStep === 'payment' && (
-                                    <PaymentStep
-                                        paymentMethod={paymentMethod}
-                                        setPaymentMethod={setPaymentMethod}
-                                        handleNextStep={handleNextStep}
-                                        handlePrevStep={handlePrevStep}
-                                    />
+
+                                {clientSecret && (
+
+                                    <Elements stripe={stripePromise} options={{ clientSecret }}>
+
+                                        <div style={{ display: currentStep === 'payment' ? 'block' : 'none' }}>
+                                            <PaymentStep
+                                                clientSecret={clientSecret}
+                                                stripePromise={stripePromise}
+                                                handleNextStep={handleNextStep}
+                                                handlePrevStep={handlePrevStep}
+                                            />
+                                        </div>
+
+                                        <div style={{ display: currentStep === 'review' ? 'block' : 'none' }}>
+                                            <ReviewStep
+                                                data={data}
+                                                paymentIntentId={paymentIntentId}
+                                                agreeTerms={agreeTerms}
+                                                setAgreeTerms={setAgreeTerms}
+                                                handlePrevStep={handlePrevStep}
+                                                setCurrentStep={setCurrentStep}
+                                                paymentMethod={paymentMethod}
+                                            />
+                                        </div>
+
+                                    </Elements>
+
                                 )}
-                                {currentStep === 'review' && (
-                                    <ReviewStep
-                                        data={data}
-                                        agreeTerms={agreeTerms}
-                                        setAgreeTerms={setAgreeTerms}
-                                        handlePrevStep={handlePrevStep}
-                                        setCurrentStep={setCurrentStep}
-                                        paymentMethod={paymentMethod}
-                                    />
-                                )}
+
+
+
                             </div>
 
                             <div className="hidden lg:block lg:col-span-1">
