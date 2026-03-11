@@ -344,12 +344,6 @@ export default function ProductDetailPage() {
                         <p className="text-sm sm:text-base text-gray-700 leading-relaxed">
                           {product?.description}
                         </p>
-                        <p className="text-sm sm:text-base text-gray-700 leading-relaxed mt-4">
-                          This premium product is crafted with attention to detail
-                          and quality materials. Perfect for everyday use and
-                          designed to last. Experience the difference with our
-                          carefully curated selection.
-                        </p>
                       </div>
                     ),
                   },

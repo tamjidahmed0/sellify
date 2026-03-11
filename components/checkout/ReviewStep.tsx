@@ -55,8 +55,7 @@ export default function ReviewStep({
 
 
     if (paymentIntent?.status === 'succeeded') {
-      console.log('this is success')
-
+   
       message.success('Payment successful!');
 
       queryClient.setQueryData<Cart>(['cart'], {

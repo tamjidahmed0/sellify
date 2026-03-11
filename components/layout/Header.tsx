@@ -12,13 +12,13 @@ import {
     Store,
     LogOut,
     ShoppingBag,
-    XCircle,
     Star,
 } from 'lucide-react';
 import useCart from '@/hooks/useCart';
 import AuthModal from '../ui/AuthModal';
 import useProfile from '@/hooks/useProfile';
 import Image from 'next/image';
+import deleteCookie from '@/lib/deleteCookie';
 
 const { Search: AntSearch } = Input;
 
@@ -31,7 +31,9 @@ export default function Header() {
 
     const handleLogout = () => {
 
-        console.log('Logout clicked');
+        deleteCookie('token')
+        window.location.href = '/';
+
     };
 
     const profileMenuItems: MenuProps['items'] = [

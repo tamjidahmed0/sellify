@@ -21,6 +21,7 @@ export interface ApiOrderItem {
     quantity: number;
     price: string;
     product: ApiOrderProduct;
+    hasReviewed: boolean;
 }
 
 export interface ApiOrder {

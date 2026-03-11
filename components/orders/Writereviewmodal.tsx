@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Modal, Form, Input, Rate } from 'antd';
 import { Star } from 'lucide-react';
 import { ReviewTarget } from './types/Order.types';
+import useCreateReview from '@/hooks/useCreateReview';
 
 const { TextArea } = Input;
 
@@ -24,15 +25,26 @@ interface WriteReviewModalProps {
 export default function WriteReviewModal({ target, open, onClose }: WriteReviewModalProps) {
     const [form] = Form.useForm();
     const [hoverRating, setHoverRating] = useState(0);
+    const { mutate, isPending } = useCreateReview();
 
     if (!target) return null;
 
     const handleSubmit = () => {
         form.validateFields().then((values) => {
-            console.log('Review submitted:', { ...values, ...target });
-            form.resetFields();
-            setHoverRating(0);
-            onClose();
+            mutate(
+                {
+                    productId: target.item.productId,
+                    rating: values.rating,
+                    comment: values.body,
+                },
+                {
+                    onSuccess: () => {
+                        form.resetFields();
+                        setHoverRating(0);
+                        onClose();
+                    },
+                }
+            );
         });
     };
 
@@ -49,11 +61,12 @@ export default function WriteReviewModal({ target, open, onClose }: WriteReviewM
             onOk={handleSubmit}
             okText="Submit Review"
             cancelText="Cancel"
+            confirmLoading={isPending}
             okButtonProps={{
                 className: 'bg-blue-600 hover:bg-blue-700 border-blue-600',
                 size: 'middle',
             }}
-            cancelButtonProps={{ size: 'middle' }}
+            cancelButtonProps={{ size: 'middle', disabled: isPending }}
             title={
                 <div className="flex items-center gap-2 pb-1">
                     <div className="p-1.5 bg-amber-50 rounded-lg">
@@ -88,6 +101,7 @@ export default function WriteReviewModal({ target, open, onClose }: WriteReviewM
                 >
                     <div className="flex items-center gap-3">
                         <Rate
+                            disabled={isPending}
                             onChange={(val) => {
                                 form.setFieldValue('rating', val);
                                 setHoverRating(val);
@@ -104,18 +118,6 @@ export default function WriteReviewModal({ target, open, onClose }: WriteReviewM
                 </Form.Item>
 
                 <Form.Item
-                    name="title"
-                    label={<span className="text-sm font-medium text-gray-700">Review Title</span>}
-                    rules={[{ required: true, message: 'Please add a title' }]}
-                >
-                    <Input
-                        placeholder="Summarize your experience in one line"
-                        size="large"
-                        className="rounded-xl"
-                    />
-                </Form.Item>
-
-                <Form.Item
                     name="body"
                     label={<span className="text-sm font-medium text-gray-700">Review Details</span>}
                     rules={[
@@ -125,6 +127,7 @@ export default function WriteReviewModal({ target, open, onClose }: WriteReviewM
                 >
                     <TextArea
                         rows={4}
+                        disabled={isPending}
                         placeholder="Share your experience — quality, packaging, delivery, etc."
                         className="rounded-xl resize-none"
                         showCount

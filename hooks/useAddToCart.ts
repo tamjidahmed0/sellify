@@ -16,8 +16,6 @@ export default function useAddToCart() {
         },
 
         onError: (error: any) => {
-            console.log(error, 'from erro')
-            
             message.error('Not enough stock');
         }
     });

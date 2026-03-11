@@ -4,8 +4,6 @@ import { Package, MapPin, Clock, ChevronDown, ChevronUp, Star, Truck, CheckCircl
 import { useState } from 'react';
 import { ApiOrder, ApiOrderItem, OrderStatus } from '@/components/orders/types/Order.types';
 
-// ─── Status Config (UPPERCASE — matches backend) ──────────────────────────────
-
 const STATUS_CONFIG: Record<
     OrderStatus,
     { label: string; bgClass: string; textClass: string; borderClass: string; dot: string; Icon: LucideIcon }
@@ -52,14 +50,10 @@ const STATUS_CONFIG: Record<
     },
 };
 
-// ─── Props ────────────────────────────────────────────────────────────────────
-
 interface OrderCardProps {
     order: ApiOrder;
     onWriteReview: (item: ApiOrderItem) => void;
 }
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function formatDate(iso: string) {
     return new Date(iso).toLocaleDateString('en-GB', {
@@ -70,10 +64,8 @@ function formatDate(iso: string) {
 }
 
 function formatPrice(value: string | number) {
-    return '৳' + parseFloat(String(value)).toLocaleString();
+    return '$' + parseFloat(String(value)).toLocaleString();
 }
-
-// ─── Component ────────────────────────────────────────────────────────────────
 
 export default function OrderCard({ order, onWriteReview }: OrderCardProps) {
     const cfg = STATUS_CONFIG[order.status] ?? STATUS_CONFIG['PENDING'];
@@ -93,7 +85,9 @@ export default function OrderCard({ order, onWriteReview }: OrderCardProps) {
                         <Package className="h-4 w-4 text-gray-500" />
                     </div>
                     <div>
-                        <p className="text-sm font-semibold text-gray-800">{order.id.slice(0, 8).toUpperCase()}</p>
+                        <p className="text-sm font-semibold text-gray-800">
+                            {order.id.slice(0, 8).toUpperCase()}
+                        </p>
                         <p className="text-xs text-gray-400 flex items-center gap-1 mt-0.5">
                             <Clock className="h-3 w-3" />
                             {formatDate(order.createdAt)}
@@ -101,7 +95,6 @@ export default function OrderCard({ order, onWriteReview }: OrderCardProps) {
                     </div>
                 </div>
 
-                {/* Status Badge */}
                 <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border ${cfg.bgClass} ${cfg.textClass} ${cfg.borderClass}`}>
                     <StatusIcon className="h-3.5 w-3.5" />
                     {cfg.label}
@@ -126,20 +119,28 @@ export default function OrderCard({ order, onWriteReview }: OrderCardProps) {
                             </p>
                         </div>
 
-                        {/* Write Review — only for delivered orders */}
+                        {/* Review button — only DELIVERED order */}
                         {order.status === 'DELIVERED' && (
-                            <button
-                                onClick={() => onWriteReview(item)}
-                                className="flex items-center gap-1 text-xs font-medium text-amber-600 hover:text-amber-700 bg-amber-50 hover:bg-amber-100 px-2.5 py-1.5 rounded-lg transition-colors shrink-0"
-                            >
-                                <Star className="h-3.5 w-3.5" />
-                                Review
-                            </button>
+                            item.hasReviewed ? (
+                                // ─── Already Reviewed ───
+                                <span className="flex items-center gap-1 text-xs font-medium text-green-600 bg-green-50 border border-green-200 px-2.5 py-1.5 rounded-lg shrink-0">
+                                    <CheckCircle className="h-3.5 w-3.5" />
+                                    Reviewed
+                                </span>
+                            ) : (
+                                // ─── Write Review ───
+                                <button
+                                    onClick={() => onWriteReview(item)}
+                                    className="flex items-center gap-1 text-xs font-medium text-amber-600 hover:text-amber-700 bg-amber-50 hover:bg-amber-100 px-2.5 py-1.5 rounded-lg transition-colors shrink-0"
+                                >
+                                    <Star className="h-3.5 w-3.5" />
+                                    Review
+                                </button>
+                            )
                         )}
                     </div>
                 ))}
 
-                {/* Show more/less toggle */}
                 {hasMore && (
                     <button
                         onClick={() => setExpanded(!expanded)}
