@@ -1,16 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { Select, Slider, Checkbox, Button, Breadcrumb, Drawer } from 'antd';
-import { Home, SlidersHorizontal } from 'lucide-react';
+import { useState } from 'react';
+import { Breadcrumb, Drawer } from 'antd';
+import { Home } from 'lucide-react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import ProductCard from '@/components/products/ProductCard';
-import { categories, Category } from '@/lib/data/products';
 import useProducts from '@/hooks/useProducts';
 import useCategories from '@/hooks/useCategories';
-
-import { Skeleton } from 'antd';
 import FilterContent from '@/components/ui/Filter';
 import FilterSkeleton from '@/components/ui/FilterSkeleton';
 import { useFilterStore } from '@/store/useFilterStore';
@@ -18,19 +15,15 @@ import { useSearchParams } from 'next/navigation';
 
 
 
-const { Option } = Select;
-
 export default function ProductsPage() {
-    // const [priceRange, setPriceRange] = useState<[number, number]>([0, 500]);
+
 
     const searchParams = useSearchParams()
     const categoryFromQuery = searchParams.get('category');
-
-    const [sortBy, setSortBy] = useState('featured');
-
+    const searchFromQueryRaw = searchParams.get('search');
+    const searchFromQuery = searchFromQueryRaw === null ? undefined : searchFromQueryRaw;
     const [showFilters, setShowFilters] = useState(false);
     const selectedCategories = useFilterStore((s) => s.selectedCategories);
-    const setCategories = useFilterStore((s) => s.setCategories);
     const priceRange = useFilterStore((s) => s.priceRange);
 
 
@@ -39,24 +32,8 @@ export default function ProductsPage() {
         ? [categoryFromQuery]
         : selectedCategories;
 
-    const { data, isLoading } = useProducts(0, 20, effectiveCategories, priceRange);
+    const { data, isLoading } = useProducts(0, 20, effectiveCategories, priceRange, searchFromQuery);
     const { data: categories, isLoading: categoryLoading } = useCategories();
-
-
-
-    // useEffect(() => {
-    //     const categoryFromQuery = searchParams.get('category');
-
-    //     if (categoryFromQuery) {
-    //         setCategories([categoryFromQuery]);
-    //     }
-
-    // }, [searchParams]);
-
-
- 
-
-
 
 
 
@@ -85,23 +62,8 @@ export default function ProductsPage() {
                         <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-2">
                             All Products
                         </h1>
-                        <p className="text-sm sm:text-base text-gray-600">
-                            {/* Showing {filteredProducts.length} of {products.length} products */}
-                            
-                        </p>
+
                     </div>
-
-
-                    {/* <div className='lg:hidden w-full'>
-                        <Button
-                            icon={<SlidersHorizontal className="h-4 w-4" />}
-                            onClick={() => setShowFilters(!showFilters)}
-                            className="w-full sm:w-auto"
-                            size="large"
-                        >
-                            Filters
-                        </Button>
-                    </div> */}
 
                 </div>
 
@@ -123,8 +85,6 @@ export default function ProductsPage() {
                     }
 
 
-
-
                     {/* Mobile Filters Drawer */}
                     <Drawer
                         title="Filters"
@@ -138,23 +98,6 @@ export default function ProductsPage() {
 
                     {/* Products Grid */}
                     <div className="flex-1 w-full">
-                        {/* <div className="bg-white p-3 sm:p-4 rounded-lg shadow-sm border border-gray-200 mb-4 sm:mb-6">
-                            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
-                                <span className="text-sm sm:text-base text-gray-700 font-medium">Sort by:</span>
-                                <Select
-                                    value={sortBy}
-                                    onChange={setSortBy}
-                                    className="w-full sm:w-auto"
-                                    style={{ minWidth: '200px' }}
-                                    size="large"
-                                >
-                                    <Option value="featured">Featured</Option>
-                                    <Option value="price-low">Price: Low to High</Option>
-                                    <Option value="price-high">Price: High to Low</Option>
-                                    <Option value="rating">Highest Rated</Option>
-                                </Select>
-                            </div>
-                        </div> */}
 
                         {isLoading ? (
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
@@ -177,32 +120,6 @@ export default function ProductsPage() {
                                 <p className="text-gray-500">No products found</p>
                             </div>
                         )}
-
-
-
-                        {/* {filteredProducts.length > 0 ? (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                                {data.map((product: any) => (
-                                    <ProductCard key={product.id} product={product} loading = {isLoading} />
-                                ))}
-                            </div>
-                        ) : (
-                            <div className="bg-white p-8 sm:p-12 rounded-lg shadow-sm border border-gray-200 text-center">
-                                <p className="text-gray-600 text-base sm:text-lg">
-                                    No products found matching your filters.
-                                </p>
-                                <Button
-                                    type="primary"
-                                    className="mt-4"
-                                    onClick={() => {
-                                        setPriceRange([0, 500]);
-                                        setSelectedCategories([]);
-                                    }}
-                                >
-                                    Clear Filters
-                                </Button>
-                            </div>
-                        )} */}
                     </div>
                 </div>
             </div>

@@ -6,11 +6,8 @@ const createPaymentIntent = async () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
     });
-    // const { clientSecret, paymentIntentId } = await res.json();
     const data = await res.json()
     return data
-    // setClientSecret(clientSecret);
-    // setPaymentIntentId(paymentIntentId)
 };
 
 export default createPaymentIntent

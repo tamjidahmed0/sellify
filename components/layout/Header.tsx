@@ -2,10 +2,9 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Badge, Drawer, Input, Dropdown, MenuProps } from 'antd';
+import { Badge, Drawer, Dropdown, MenuProps } from 'antd';
 import {
     ShoppingCart,
-    Search,
     Menu,
     Heart,
     User,
@@ -13,27 +12,26 @@ import {
     LogOut,
     ShoppingBag,
     Star,
+    Search,
 } from 'lucide-react';
 import useCart from '@/hooks/useCart';
 import AuthModal from '../ui/AuthModal';
 import useProfile from '@/hooks/useProfile';
 import Image from 'next/image';
 import deleteCookie from '@/lib/deleteCookie';
-
-const { Search: AntSearch } = Input;
+import SearchBar from '../ui/SearchBar';
 
 export default function Header() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [authModalOpen, setAuthModalOpen] = useState(false);
+    const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
     const { data } = useCart();
     const { data: profile } = useProfile();
     const cartCount = data?.items.length;
 
     const handleLogout = () => {
-
-        deleteCookie('token')
+        deleteCookie('token');
         window.location.href = '/';
-
     };
 
     const profileMenuItems: MenuProps['items'] = [
@@ -46,7 +44,6 @@ export default function Header() {
                 </Link>
             ),
         },
-
         {
             key: 'reviews',
             label: (
@@ -56,9 +53,7 @@ export default function Header() {
                 </Link>
             ),
         },
-        {
-            type: 'divider',
-        },
+        { type: 'divider' },
         {
             key: 'logout',
             label: (
@@ -79,12 +74,13 @@ export default function Header() {
         { name: 'Categories', href: '/categories' },
     ];
 
-
     return (
         <header className="sticky top-0 z-50 bg-white shadow-sm">
             <div className="border-b border-gray-100">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-16">
+
+                        {/* Left — logo + nav */}
                         <div className="flex items-center space-x-8">
                             <Link href="/" className="flex items-center space-x-2">
                                 <Store className="h-8 w-8 text-blue-600" />
@@ -106,17 +102,23 @@ export default function Header() {
                             </nav>
                         </div>
 
+                        {/* Center — desktop search */}
                         <div className="hidden md:flex items-center flex-1 max-w-md mx-8">
-                            <AntSearch
-                                placeholder="Search products..."
-                                size="large"
-                                prefix={<Search className="h-4 w-4 text-gray-400" />}
-                                className="w-full"
-                            />
+                            <SearchBar />
                         </div>
 
-                        <div className="flex items-center space-x-4">
-                            <button className="hidden md:flex items-center space-x-2 text-gray-700 hover:text-blue-600 transition-colors">
+                        {/* Right — icons */}
+                        <div className="flex items-center space-x-3">
+
+                            {/* Mobile search toggle */}
+                            <button
+                                className="md:hidden text-gray-700 hover:text-blue-600 transition-colors"
+                                onClick={() => setMobileSearchOpen((prev) => !prev)}
+                            >
+                                <Search className="h-5 w-5" />
+                            </button>
+
+                            <button className="hidden md:flex items-center text-gray-700 hover:text-blue-600 transition-colors">
                                 <Heart className="h-6 w-6" />
                             </button>
 
@@ -141,7 +143,7 @@ export default function Header() {
                                         setMobileMenuOpen(false);
                                         setAuthModalOpen(true);
                                     }}
-                                    className="hidden cursor-pointer md:flex items-center space-x-2 text-gray-700 hover:text-blue-600 transition-colors"
+                                    className="hidden cursor-pointer md:flex items-center text-gray-700 hover:text-blue-600 transition-colors"
                                 >
                                     <User className="h-6 w-6" />
                                 </button>
@@ -149,7 +151,7 @@ export default function Header() {
 
                             <Link
                                 href="/cart"
-                                className="flex items-center space-x-2 text-gray-700 hover:text-blue-600 transition-colors"
+                                className="flex items-center text-gray-700 hover:text-blue-600 transition-colors"
                             >
                                 <Badge count={cartCount}>
                                     <ShoppingCart className="h-6 w-6" />
@@ -166,6 +168,13 @@ export default function Header() {
                     </div>
                 </div>
             </div>
+
+            {/* Mobile search bar */}
+            {mobileSearchOpen && (
+                <div className="md:hidden px-4 py-3 border-b border-gray-100 bg-white">
+                    <SearchBar />
+                </div>
+            )}
 
             <Drawer
                 title="Menu"

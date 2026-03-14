@@ -3,13 +3,12 @@
 import Link from 'next/link';
 import { Button } from 'antd';
 import { ArrowRight } from 'lucide-react';
-// import { products } from '@/lib/data/products';
 import ProductCard from '@/components/products/ProductCard';
 import useProducts from '@/hooks/useProducts';
 import { Product } from '@/lib/data/products';
 
 export default function FeaturedProducts() {
-  const { data, isLoading } = useProducts(0, 4);
+  const { data, isLoading } = useProducts(0, 6);
 
 
 
@@ -37,13 +36,6 @@ export default function FeaturedProducts() {
             </Button>
           </Link>
         </div>
-
-        {/* <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {featuredProducts.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div> */}
-
 
         {isLoading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">

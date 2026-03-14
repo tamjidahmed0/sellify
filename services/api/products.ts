@@ -4,7 +4,8 @@ const products = async (
     skip: number = 0,
     take: number = 20,
     categories: string[] = [],
-    priceRange?: PriceRange
+    priceRange?: PriceRange,
+    search?: string
 ) => {
     const params = new URLSearchParams();
 
@@ -18,6 +19,11 @@ const products = async (
         params.append('minPrice', String(priceRange[0]));
         params.append('maxPrice', String(priceRange[1]));
     }
+
+    if (search) {
+        params.append('search', search);
+    }
+
 
     const res = await fetch(
         `${process.env.NEXT_PUBLIC_BASE_URL}/product?${params.toString()}`

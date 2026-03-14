@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useParams } from 'next/navigation';
-import { Button, Rate, InputNumber, Tabs, Breadcrumb, Tag, Skeleton } from 'antd';
+import { Button, Rate, InputNumber, Tabs, Breadcrumb, Tag, Skeleton, Pagination, Avatar } from 'antd';
 import {
   ShoppingCart,
   Heart,
@@ -13,13 +13,14 @@ import {
   Home,
   ChevronLeft,
   ChevronRight,
+  User,
 } from 'lucide-react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import useSingleProduct from '@/hooks/useSingleProduct';
 import { Product } from '@/lib/data/products';
 import useAddToCart from '@/hooks/useAddToCart';
-
+import { usePublicReviews } from '@/hooks/usePublicReviews';
 
 
 
@@ -34,6 +35,11 @@ export default function ProductDetailPage() {
 
   const { data, isLoading } = useSingleProduct(slug as string);
   const { mutate: addToCart, isPending } = useAddToCart();
+  const [reviewPage, setReviewPage] = useState(1);
+  const { data: reviewData, isLoading: reviewLoading } = usePublicReviews(
+    slug as string,
+    reviewPage
+  );
 
 
   const product: Product = data;
@@ -214,7 +220,7 @@ export default function ProductDetailPage() {
                     <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-4">
                       {product?.name}
                     </h1>
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-2 sm:space-y-0 mb-4">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:space-x-4 space-y-2 sm:space-y-0 mb-4">
                       <Rate disabled defaultValue={product?.rating} className="text-sm sm:text-base" />
                       <span className="text-sm sm:text-base text-gray-600">
                         {product?.reviewsCount} reviews
@@ -247,9 +253,7 @@ export default function ProductDetailPage() {
                   </div>
 
                   <div>
-                    <p className="text-sm sm:text-base text-gray-700 leading-relaxed">
-                      {product?.description}
-                    </p>
+
                   </div>
 
                   <div className="space-y-4">
@@ -349,53 +353,89 @@ export default function ProductDetailPage() {
                   },
                   {
                     key: '2',
-                    label: 'Specifications',
-                    children: (
-                      <div className="space-y-2">
-                        <div className="grid grid-cols-2 py-3 border-b gap-2">
-                          <span className="font-medium text-gray-900 text-sm sm:text-base">
-                            Category
-                          </span>
-                          <span className="text-gray-700 text-sm sm:text-base">
-                            {product?.categories?.[0]?.name}
-                          </span>
-                        </div>
-                        <div className="grid grid-cols-2 py-3 border-b gap-2">
-                          <span className="font-medium text-gray-900 text-sm sm:text-base">
-                            Brand
-                          </span>
-                          <span className="text-gray-700 text-sm sm:text-base">ShopHub Premium</span>
-                        </div>
-                        <div className="grid grid-cols-2 py-3 border-b gap-2">
-                          <span className="font-medium text-gray-900 text-sm sm:text-base">
-                            Availability
-                          </span>
-                          <span className="text-gray-700 text-sm sm:text-base">
-                            {product?.inStock ? 'In Stock' : 'Out of Stock'}
-                          </span>
-                        </div>
-                      </div>
-                    ),
-                  },
-                  {
-                    key: '3',
                     label: `Reviews (${product?.reviewsCount})`,
                     children: (
                       <div className="space-y-6">
-                        <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-8 space-y-4 sm:space-y-0">
+                        {/* Rating summary */}
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-8 space-y-4 sm:space-y-0 pb-6 border-b border-gray-100">
                           <div className="text-center">
                             <div className="text-4xl sm:text-5xl font-bold text-gray-900 mb-2">
                               {product?.rating}
                             </div>
                             <Rate disabled defaultValue={product?.rating} className="text-sm sm:text-base" />
-                            <p className="text-sm sm:text-base text-gray-600 mt-2">
+                            <p className="text-sm text-gray-500 mt-2">
                               {product?.reviewsCount} reviews
                             </p>
                           </div>
                         </div>
-                        <p className="text-sm sm:text-base text-gray-600">
-                          Customer reviews will appear here.
-                        </p>
+
+                        {/* Reviews list */}
+                        {reviewLoading ? (
+                          <div className="space-y-4">
+                            {[...Array(3)].map((_, i) => (
+                              <Skeleton key={i} active avatar paragraph={{ rows: 2 }} />
+                            ))}
+                          </div>
+                        ) : reviewData?.data?.length === 0 ? (
+                          <div className="text-center py-12 text-gray-400">
+                            <p className="text-base">No reviews yet. Be the first to review!</p>
+                          </div>
+                        ) : (
+                          <div className="space-y-4">
+                            {reviewData?.data?.map((review: any) => (
+                              <div
+                                key={review.id}
+                                className="flex gap-4 p-4 rounded-lg bg-gray-50 border border-gray-100"
+                              >
+                                {/* Avatar */}
+                                <Avatar
+                                  size={40}
+                                  icon={<User className="h-4 w-4" />}
+                                  className="bg-blue-100 text-blue-600 shrink-0"
+                                />
+
+                                {/* Content */}
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-2">
+                                    <span className="text-sm font-medium text-gray-800">
+                                      User
+                                    </span>
+                                    <span className="text-xs text-gray-400">
+                                      {new Date(review.createdAt).toLocaleDateString('en-US', {
+                                        year: 'numeric',
+                                        month: 'short',
+                                        day: 'numeric',
+                                      })}
+                                    </span>
+                                  </div>
+                                  <Rate
+                                    disabled
+                                    defaultValue={review.rating}
+                                    className="text-xs mb-2"
+                                  />
+                                  {review.comment && (
+                                    <p className="text-sm text-gray-700 leading-relaxed">
+                                      {review.comment}
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Pagination */}
+                        {reviewData?.meta?.totalPages > 1 && (
+                          <div className="flex justify-center pt-4">
+                            <Pagination
+                              current={reviewPage}
+                              total={reviewData?.meta?.total}
+                              pageSize={10}
+                              onChange={(page) => setReviewPage(page)}
+                              showSizeChanger={false}
+                            />
+                          </div>
+                        )}
                       </div>
                     ),
                   },

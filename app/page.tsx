@@ -3,7 +3,6 @@ import FeaturedProducts from "@/components/Home/FeaturedProducts";
 import Hero from "@/components/Home/Hero";
 import Footer from "@/components/layout/Footer";
 import Header from "@/components/layout/Header";
-import Image from "next/image";
 
 export default function Home() {
   return (
