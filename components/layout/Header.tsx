@@ -89,7 +89,7 @@ export default function Header() {
                             <Link href="/" className="flex items-center space-x-2">
                                 <Store className="h-8 w-8 text-blue-600" />
                                 <span className="text-2xl font-bold bg-linear-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
-                                    ShopHub
+                                    Sellify
                                 </span>
                             </Link>
 

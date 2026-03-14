@@ -2,40 +2,14 @@
 
 import Link from 'next/link';
 import { Button, Carousel } from 'antd';
-import { ArrowRight, ShoppingBag, Zap } from 'lucide-react';
+import { ShoppingBag, Zap } from 'lucide-react';
 import useGetslides from '@/hooks/useGetSlides';
+import HeroSkeleton from './HeroSkeleton';
 
 export default function Hero() {
   const { data: slides, isLoading } = useGetslides();
 
-
-
-  // const slides = [
-  //   {
-  //     title: 'Summer Collection',
-  //     subtitle: 'Up to 50% Off',
-  //     description: 'Discover our latest arrivals and exclusive summer deals',
-  //     image:
-  //       'https://images.pexels.com/photos/1488463/pexels-photo-1488463.jpeg',
-  //     color: 'from-blue-600 to-cyan-500',
-  //   },
-  //   {
-  //     title: 'Premium Electronics',
-  //     subtitle: 'Innovation at Your Fingertips',
-  //     description: 'Shop the latest tech gadgets and smart devices',
-  //     image:
-  //       'https://images.pexels.com/photos/1619317/pexels-photo-1619317.jpeg',
-  //     color: 'from-slate-700 to-slate-500',
-  //   },
-  //   {
-  //     title: 'Exclusive Deals',
-  //     subtitle: 'Limited Time Offers',
-  //     description: 'Grab your favorite products before they are gone',
-  //     image:
-  //       'https://images.pexels.com/photos/1050244/pexels-photo-1050244.jpeg',
-  //     color: 'from-orange-600 to-red-500',
-  //   },
-  // ];
+  if (isLoading) return <HeroSkeleton />;
 
   return (
     <div className="relative">
