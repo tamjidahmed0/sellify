@@ -24,11 +24,17 @@ import ShippingStep from '@/components/checkout/ShippingForm';
 import CheckoutSkeleton from '@/app/checkout/CheckoutSkeleton';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
-import getCookie from '@/lib/getCookie';
+import createPaymentIntent from '@/services/api/createPaymentIntent';
 
 type StepKey = 'shipping' | 'payment' | 'review';
 
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PROMISE as string);
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PROMISE as string, {
+    developerTools: {
+        assistant: {
+            enabled: false
+        }
+    }
+});
 
 
 
@@ -72,37 +78,20 @@ export default function CheckoutPage() {
     };
 
 
-
-
-
-
-
-
-
     useEffect(() => {
+
+        const fetchPaymentIntent = async() =>{
         if (currentStep === 'payment' && !hasCreatedIntent.current) {
             hasCreatedIntent.current = true;
-            createPaymentIntent();
+            const { clientSecret, paymentIntentId } = await createPaymentIntent()
+            setClientSecret(clientSecret);
+            setPaymentIntentId(paymentIntentId)
         }
+        }
+
+        fetchPaymentIntent()
+
     }, [currentStep]);
-
-
-    const createPaymentIntent = async () => {
-        const token = getCookie('token')
-        const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/stripe/create-payment-intent`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        });
-        const { clientSecret, paymentIntentId } = await res.json();
-        setClientSecret(clientSecret);
-        setPaymentIntentId(paymentIntentId)
-    };
-
-
-
-
-
-
 
 
 
