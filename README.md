@@ -13,7 +13,7 @@ A full-stack e-commerce web application built with **Next.js** and **NestJS**, f
 
 ##  Live Demo
 
-> Live Demo will be added soon.
+> https://sellify-pi.vercel.app/
 
 ---
 
