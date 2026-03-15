@@ -1,10 +1,7 @@
 'use client';
-
-import React, { useEffect } from 'react';
 import { Modal, Button } from 'antd';
 import { Store } from 'lucide-react';
-import { useSearchParams } from 'next/navigation';
-import setCookie from '@/lib/setCookie';
+
 
 interface AuthModalProps {
   open: boolean;
@@ -14,19 +11,10 @@ interface AuthModalProps {
 
 
 
-
-
-
 export default function AuthModal({ open, onClose }: AuthModalProps) {
   const handleGoogleAuth = () => {
-    window.location.href = 'http://localhost:4000/auth/google';
+    window.location.href = `${process.env.NEXT_PUBLIC_BASE_URL}/auth/google`;
   };
-  
-
-
-
-
-
 
 
 
