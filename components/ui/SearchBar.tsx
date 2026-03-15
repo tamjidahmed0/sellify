@@ -102,7 +102,7 @@ export default function SearchBar() {
                                 <p className="text-sm text-gray-800 truncate">{s.name}</p>
                                 <p className="text-xs text-gray-400 mt-0.5">
                                     {s.category && <span>{s.category} · </span>}
-                                    <span className="text-blue-600 font-medium">৳{s.price}</span>
+                                    <span className="text-blue-600 font-medium">${s.price}</span>
                                 </p>
                             </div>
 
