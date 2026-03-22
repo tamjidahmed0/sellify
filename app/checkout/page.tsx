@@ -1,17 +1,8 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import {
-    Card,
-    Form,
-    Steps,
-    Breadcrumb,
-} from 'antd';
-import {
-    Home,
-    ShoppingBag,
-    ShoppingCart,
-} from 'lucide-react';
+import { Card, Form, Steps, Breadcrumb } from 'antd';
+import { Home, ShoppingBag, ShoppingCart } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Button } from 'antd';
 import Header from '@/components/layout/Header';
@@ -28,15 +19,22 @@ import createPaymentIntent from '@/services/api/createPaymentIntent';
 
 type StepKey = 'shipping' | 'payment' | 'review';
 
+// Address type — ShippingStep 
+export interface AddressData {
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string;
+    addressLine: string;
+    city: string;
+    state: string;
+    zipCode: string;
+    country: string;
+}
+
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PROMISE as string, {
-    developerTools: {
-        assistant: {
-            enabled: false
-        }
-    }
+    developerTools: { assistant: { enabled: false } },
 });
-
-
 
 export default function CheckoutPage() {
     const [form] = Form.useForm();
@@ -50,12 +48,14 @@ export default function CheckoutPage() {
     const [paymentIntentId, setPaymentIntentId] = useState<string | null>(null);
     const hasCreatedIntent = useRef(false);
 
+    // Address state 
+    const [shippingAddress, setShippingAddress] = useState<AddressData | null>(null);
+
     const { data, isLoading } = useCart();
     const isEmpty = !isLoading && (!data?.items || data.items.length === 0);
 
     const subtotal = data?.items.reduce(
-        (sum, item) => sum + Number(item.price) * item.quantity,
-        0
+        (sum, item) => sum + Number(item.price) * item.quantity, 0
     ) ?? 0;
     const shipping = 0;
     const tax = subtotal * 0.08;
@@ -77,39 +77,27 @@ export default function CheckoutPage() {
         else if (currentStep === 'review') setCurrentStep('payment');
     };
 
-
+    // Payment intent 
     useEffect(() => {
-
-        const fetchPaymentIntent = async() =>{
-        if (currentStep === 'payment' && !hasCreatedIntent.current) {
-            hasCreatedIntent.current = true;
-            const { clientSecret, paymentIntentId } = await createPaymentIntent()
-            setClientSecret(clientSecret);
-            setPaymentIntentId(paymentIntentId)
-        }
-        }
-
-        fetchPaymentIntent()
-
-    }, [currentStep]);
-
-
+        const fetchPaymentIntent = async () => {
+            if (currentStep === 'payment' && !hasCreatedIntent.current && shippingAddress) {
+                hasCreatedIntent.current = true;
+                const { clientSecret, paymentIntentId } = await createPaymentIntent(shippingAddress);
+                setClientSecret(clientSecret);
+                setPaymentIntentId(paymentIntentId);
+            }
+        };
+        fetchPaymentIntent();
+    }, [currentStep, shippingAddress]);
 
     return (
         <div className="min-h-screen bg-linear-to-b from-gray-50 to-white">
             <Header />
 
-
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8">
                 <Breadcrumb
                     items={[
-                        {
-                            title: (
-                                <a href="/" className="flex items-center">
-                                    <Home className="h-4 w-4" />
-                                </a>
-                            ),
-                        },
+                        { title: (<a href="/"><Home className="h-4 w-4" /></a>) },
                         { title: <a href="/cart">Cart</a> },
                         { title: 'Checkout' },
                     ]}
@@ -120,10 +108,9 @@ export default function CheckoutPage() {
                     <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-1 md:mb-2">
                         Checkout
                     </h1>
-                    <p className="text-gray-600 text-sm md:text-base">
-                        Complete your purchase securely
-                    </p>
+                    <p className="text-gray-600 text-sm md:text-base">Complete your purchase securely</p>
                 </div>
+
                 {isLoading ? (
                     <CheckoutSkeleton />
                 ) : isEmpty ? (
@@ -146,7 +133,7 @@ export default function CheckoutPage() {
                     </Card>
                 ) : (
                     <>
-                        {/* Mobile: collapsible Order Summary toggle */}
+                        {/* Mobile: collapsible order summary */}
                         <div className="lg:hidden mb-4">
                             <button
                                 onClick={() => setShowOrderSummary((prev) => !prev)}
@@ -155,24 +142,18 @@ export default function CheckoutPage() {
                                 <div className="flex items-center space-x-2 text-blue-600 font-semibold text-sm">
                                     <ShoppingBag className="h-4 w-4" />
                                     <span>
-                                        {showOrderSummary ? 'Hide' : 'Show'} order summary (
-                                        {data?.items.length} items)
+                                        {showOrderSummary ? 'Hide' : 'Show'} order summary ({data?.items.length} items)
                                     </span>
                                 </div>
-                                <span className="text-lg font-bold text-blue-600">
-                                    ${total.toFixed(2)}
-                                </span>
+                                <span className="text-lg font-bold text-blue-600">${total.toFixed(2)}</span>
                             </button>
 
                             {showOrderSummary && (
                                 <Card className="mt-2 rounded-xl border border-gray-200 shadow-sm">
                                     {data && (
                                         <OrderSummaryContent
-                                            data={data}
-                                            subtotal={subtotal}
-                                            tax={tax}
-                                            shipping={shipping}
-                                            total={total}
+                                            data={data} subtotal={subtotal}
+                                            tax={tax} shipping={shipping} total={total}
                                         />
                                     )}
                                 </Card>
@@ -190,14 +171,18 @@ export default function CheckoutPage() {
 
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 items-start">
                             <div className="lg:col-span-2 w-full min-w-0">
+
+                                {/* Shipping step — onAddressSubmit এ address parent এ save হবে */}
                                 {currentStep === 'shipping' && (
-                                    <ShippingStep form={form} handleNextStep={handleNextStep} />
+                                    <ShippingStep
+                                        form={form}
+                                        handleNextStep={handleNextStep}
+                                        onAddressSubmit={(addr) => setShippingAddress(addr)}
+                                    />
                                 )}
 
                                 {clientSecret && (
-
                                     <Elements stripe={stripePromise} options={{ clientSecret }}>
-
                                         <div style={{ display: currentStep === 'payment' ? 'block' : 'none' }}>
                                             <PaymentStep
                                                 clientSecret={clientSecret}
@@ -206,7 +191,6 @@ export default function CheckoutPage() {
                                                 handlePrevStep={handlePrevStep}
                                             />
                                         </div>
-
                                         <div style={{ display: currentStep === 'review' ? 'block' : 'none' }}>
                                             <ReviewStep
                                                 data={data}
@@ -216,15 +200,11 @@ export default function CheckoutPage() {
                                                 handlePrevStep={handlePrevStep}
                                                 setCurrentStep={setCurrentStep}
                                                 paymentMethod={paymentMethod}
+                                                shippingAddress={shippingAddress}
                                             />
                                         </div>
-
                                     </Elements>
-
                                 )}
-
-
-
                             </div>
 
                             <div className="hidden lg:block lg:col-span-1">
@@ -232,11 +212,8 @@ export default function CheckoutPage() {
                                     <Card className="rounded-xl shadow-sm">
                                         {data && (
                                             <OrderSummaryContent
-                                                data={data}
-                                                subtotal={subtotal}
-                                                tax={tax}
-                                                shipping={shipping}
-                                                total={total}
+                                                data={data} subtotal={subtotal}
+                                                tax={tax} shipping={shipping} total={total}
                                             />
                                         )}
                                     </Card>
@@ -245,15 +222,10 @@ export default function CheckoutPage() {
                         </div>
                     </>
                 )}
-
             </div>
 
             <Footer />
         </div>
     );
 }
-
-
-
-
 
