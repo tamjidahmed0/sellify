@@ -283,7 +283,7 @@ export default function ShippingStep({ form, handleNextStep, onAddressSubmit }: 
                 </Form.Item>
 
                 {/* Save address checkbox — only shown if user is logged in */}
-                {typeof window !== 'undefined' && localStorage.getItem('token') && (
+                {typeof window !== 'undefined' && getCookie('token') && (
                     <Checkbox
                         checked={saveForFuture}
                         onChange={(e) => setSaveForFuture(e.target.checked)}
