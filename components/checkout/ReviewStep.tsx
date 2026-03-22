@@ -1,11 +1,23 @@
+'use client';
 import { Card, Button, Checkbox, message } from 'antd';
 import { CreditCard, Edit2, ShoppingBag, Truck } from 'lucide-react';
 import { Cart } from '@/types/cart';
 import { useElements, useStripe } from '@stripe/react-stripe-js';
 import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
 
-
+interface AddressData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  addressLine: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  country: string;
+}
 
 interface ReviewStepProps {
   data?: Cart;
@@ -15,8 +27,8 @@ interface ReviewStepProps {
   handlePrevStep: () => void;
   setCurrentStep: (step: 'shipping' | 'payment' | 'review') => void;
   paymentMethod: string;
+  shippingAddress: AddressData | null;
 }
-
 
 export default function ReviewStep({
   data,
@@ -25,22 +37,19 @@ export default function ReviewStep({
   handlePrevStep,
   setCurrentStep,
   paymentMethod,
+  shippingAddress,
 }: ReviewStepProps) {
-
   const queryClient = useQueryClient();
-
-  const stripe = useStripe()
-  const elements = useElements()
+  const router = useRouter();
+  const stripe = useStripe();
+  const elements = useElements();
   const [loading, setLoading] = useState(false);
 
   if (!data) return null;
 
-
-
   const handleOrder = async () => {
     if (!stripe || !elements) return;
     setLoading(true);
-
 
     const { error, paymentIntent } = await stripe.confirmPayment({
       elements,
@@ -53,11 +62,10 @@ export default function ReviewStep({
       return;
     }
 
-
     if (paymentIntent?.status === 'succeeded') {
-   
-      message.success('Payment successful!');
+      message.success('Order placed successfully!');
 
+      // Clear cart in query cache
       queryClient.setQueryData<Cart>(['cart'], {
         id: '',
         userId: '',
@@ -65,18 +73,10 @@ export default function ReviewStep({
         total: 0,
       });
 
-
     }
 
     setLoading(false);
   };
-
-
-
-
-
-
-
 
   return (
     <Card className="mb-6 rounded-xl shadow-sm">
@@ -85,7 +85,8 @@ export default function ReviewStep({
       </h2>
 
       <div className="space-y-6">
-        {/* Shipping */}
+
+        {/* Shipping address — dynamic */}
         <div>
           <h3 className="font-semibold text-gray-900 mb-3 flex items-center space-x-2">
             <Truck className="h-5 w-5 shrink-0" />
@@ -98,16 +99,26 @@ export default function ReviewStep({
             </button>
           </h3>
 
-          <p className="text-gray-700 text-sm">John Doe</p>
-          <p className="text-gray-600 text-xs">
-            123 Main Street, New York, NY 10001, United States
-          </p>
-          <p className="text-gray-600 text-xs">
-            john@example.com • +1 (555) 000-0000
-          </p>
+          {shippingAddress ? (
+            <>
+              <p className="text-gray-700 text-sm font-medium">
+                {shippingAddress.firstName} {shippingAddress.lastName}
+              </p>
+              <p className="text-gray-600 text-xs mt-0.5">
+                {shippingAddress.addressLine}, {shippingAddress.city},{' '}
+                {shippingAddress.state} {shippingAddress.zipCode},{' '}
+                {shippingAddress.country}
+              </p>
+              <p className="text-gray-600 text-xs mt-0.5">
+                {shippingAddress.email} • {shippingAddress.phone}
+              </p>
+            </>
+          ) : (
+            <p className="text-sm text-gray-400">No address provided</p>
+          )}
         </div>
 
-        {/* Payment */}
+        {/* Payment method */}
         <div className="border-t pt-6">
           <h3 className="font-semibold text-gray-900 mb-3 flex items-center space-x-2">
             <CreditCard className="h-5 w-5 shrink-0" />
@@ -119,22 +130,20 @@ export default function ReviewStep({
               <Edit2 className="h-4 w-4 text-blue-600" />
             </button>
           </h3>
-
           <p className="text-gray-700 text-sm">
-            {paymentMethod === 'card' && 'Credit Card ending in 3456'}
+            {paymentMethod === 'card' && 'Credit / Debit Card'}
             {paymentMethod === 'paypal' && 'PayPal'}
             {paymentMethod === 'applepay' && 'Apple Pay'}
             {paymentMethod === 'googlepay' && 'Google Pay'}
           </p>
         </div>
 
-        {/* Items */}
+        {/* Order items */}
         <div className="border-t pt-6">
           <h3 className="font-semibold text-gray-900 mb-3 flex items-center space-x-2">
             <ShoppingBag className="h-5 w-5 shrink-0" />
             <span>Items ({data.items.length})</span>
           </h3>
-
           <div className="space-y-3">
             {data.items.map((item) => (
               <div
@@ -151,13 +160,10 @@ export default function ReviewStep({
                     <p className="font-medium text-gray-900 text-sm truncate">
                       {item.productName}
                     </p>
-                    <p className="text-xs text-gray-600">
-                      Qty: {item.quantity}
-                    </p>
+                    <p className="text-xs text-gray-600">Qty: {item.quantity}</p>
                   </div>
                 </div>
-
-                <p className="font-semibold text-gray-900 text-sm">
+                <p className="font-semibold text-gray-900 text-sm shrink-0">
                   ${(Number(item.price) * item.quantity).toFixed(2)}
                 </p>
               </div>
@@ -172,7 +178,7 @@ export default function ReviewStep({
         onChange={(e) => setAgreeTerms(e.target.checked)}
         className="mt-8"
       >
-        I agree to the Terms & Conditions and Privacy Policy
+        I agree to the Terms &amp; Conditions and Privacy Policy
       </Checkbox>
 
       {/* Actions */}
@@ -184,35 +190,16 @@ export default function ReviewStep({
         >
           Back
         </Button>
-
-
-        {/* <Button
-          onClick={handleOrder}
-          type="primary"
-          size="large"
-          loading={isPending}
-          disabled={!agreeTerms || isPending}
-          className="h-12 px-8 bg-green-600 hover:bg-green-700 border-none font-semibold w-full sm:w-auto"
-        >
-          {isPending ? "Placing Order..." : "Place Order"}
-        </Button> */}
-
-
-
         <Button
           onClick={handleOrder}
           type="primary"
           size="large"
           loading={loading}
           disabled={!agreeTerms || loading}
-          className="h-12 px-8 bg-green-600 ..."
+          className="h-12 px-8 bg-green-600 hover:bg-green-700 border-none font-semibold w-full sm:w-auto"
         >
-          {(loading) ? "Processing..." : "Place Order"}
+          {loading ? 'Processing…' : 'Place Order'}
         </Button>
-
-
-
-
       </div>
     </Card>
   );

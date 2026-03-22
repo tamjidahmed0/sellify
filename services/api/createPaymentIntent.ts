@@ -1,13 +1,27 @@
-import getCookie from "@/lib/getCookie";
+import type { AddressData } from '@/app/checkout/page';
+import getCookie from '@/lib/getCookie';
 
-const createPaymentIntent = async () => {
+const API_URL = process.env.NEXT_PUBLIC_BASE_URL;
+
+const createPaymentIntent = async (address: AddressData) => {
     const token = getCookie('token')
-    const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/stripe/create-payment-intent`, {
+
+    const response = await fetch(`${API_URL}/stripe/create-payment-intent`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        headers: {
+            'Content-Type': 'application/json',
+            ...(token && { Authorization: `Bearer ${token}` }),
+        },
+
+        body: JSON.stringify({ address }),
     });
-    const data = await res.json()
-    return data
+
+    if (!response.ok) throw new Error('Failed to create payment intent');
+
+    return response.json() as Promise<{
+        clientSecret: string;
+        paymentIntentId: string;
+    }>;
 };
 
-export default createPaymentIntent
+export default createPaymentIntent;
