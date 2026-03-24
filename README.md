@@ -9,13 +9,7 @@
 
 A full-stack e-commerce web application built with **Next.js** and **NestJS**, featuring a seamless shopping experience with product discovery, cart management, order tracking, and more.
 
----
 
-##  Live Demo
-
-> Live Demo will be added soon.
-
----
 
 ##  Features
 
@@ -97,7 +91,11 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ##  Screenshots
 
-> Screenshots will be added soon.
+
+![Home Page](screenshots/home.png)
+
+
+![Order Page](screenshots/order.png)
 
 
 ##  Author
