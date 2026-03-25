@@ -21,7 +21,7 @@ A full-stack e-commerce web application built with **Next.js** and **NestJS**, f
 -  **Reviews & Ratings** — Leave reviews and rate purchased products
 -  **Image Uploads** — Product images hosted on Cloudinary
 -  **Responsive Design** — Fully mobile-friendly UI
--  **Admin Panel** *(Coming Soon)* — Manage products, orders, and users
+-  **Admin Panel** — Manage products, orders, and users
 
 ---
 
